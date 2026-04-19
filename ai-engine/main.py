@@ -5,7 +5,7 @@ import httpx
 import os
 import re
 
-app = FastAPI()
+app = FastAPI(redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,27 +21,21 @@ def _get_demo_response(contents: list) -> str:
             last = c["parts"][0]["text"].lower()
             break
 
-    # Replace the demo eligible block (around line 26-32) with this:
-if "eligible" in last and "actionplan" in last:
-    backlog_match = re.search(r'backlogs?[^\d]*(\d+)', last)
-    cgpa_match = re.search(r'cgpa\s*=\s*([\d.]+)', last)
-    mincgpa_match = re.search(r'min cgpa:\s*([\d.]+)', last)
-
-    has_backlogs = backlog_match and int(backlog_match.group(1)) > 0
-    
-    student_cgpa = float(cgpa_match.group(1)) if cgpa_match else 0
-    min_cgpa = float(mincgpa_match.group(1)) if mincgpa_match else 6.0
-    
-    cgpa_ok = student_cgpa >= min_cgpa
-
-    if has_backlogs or not cgpa_ok:
-        reason = "Active backlogs make you ineligible" if has_backlogs else f"CGPA {student_cgpa} is below the minimum {min_cgpa} required"
-        return f'{{"eligible":false,"score":10,"gaps":["{reason}"],"actionPlan":["Clear all backlogs first","Focus on CGPA improvement","Apply after meeting cutoffs"],"timeline":"Next semester","verdict":"Not eligible. {reason}.","pivotCompanies":["Wipro","Cognizant","Infosys"]}}'
-    
-    return '{"eligible":true,"score":78,"gaps":["Improve DSA speed","Practice mock interviews"],"actionPlan":["Complete 50 LeetCode Easy/Medium","Practice 2 mock OA tests per week","Revise DBMS and OS fundamentals","Apply to 5 companies this week"],"timeline":"8 weeks","verdict":"You meet the basic eligibility criteria. Focus on OA preparation and communication skills to stand out.","pivotCompanies":["Wipro","Cognizant","Infosys"]}'
+    if "eligible" in last and "actionplan" in last:
+        backlog_match = re.search(r'backlogs?[^\d]*(\d+)', last)
+        cgpa_match = re.search(r'cgpa\s*=\s*([\d.]+)', last)
+        mincgpa_match = re.search(r'min cgpa:\s*([\d.]+)', last)
+        has_backlogs = backlog_match and int(backlog_match.group(1)) > 0
+        student_cgpa = float(cgpa_match.group(1)) if cgpa_match else 0
+        min_cgpa = float(mincgpa_match.group(1)) if mincgpa_match else 6.0
+        cgpa_ok = student_cgpa >= min_cgpa
+        if has_backlogs or not cgpa_ok:
+            reason = "Active backlogs make you ineligible" if has_backlogs else f"CGPA {student_cgpa} is below the minimum {min_cgpa} required"
+            return f'{{"eligible":false,"score":10,"gaps":["{reason}"],"actionPlan":["Clear all backlogs first","Focus on CGPA improvement","Apply after meeting cutoffs"],"timeline":"Next semester","verdict":"Not eligible. {reason}.","pivotCompanies":["Wipro","Cognizant","Infosys"]}}'
+        return '{"eligible":true,"score":78,"gaps":["Improve DSA speed","Practice mock interviews"],"actionPlan":["Complete 50 LeetCode Easy/Medium","Practice 2 mock OA tests per week","Revise DBMS and OS fundamentals","Apply to 5 companies this week"],"timeline":"8 weeks","verdict":"You meet the basic eligibility criteria.","pivotCompanies":["Wipro","Cognizant","Infosys"]}'
 
     if "ats" in last or "github" in last or "resume" in last:
-        return '{"questions":[{"question":"Walk me through your most complex project.","followUp":"What would you change if you rebuilt it today?","difficulty":"Medium","topic":"Projects"},{"question":"How do you handle merge conflicts?","followUp":"Describe a time a bad merge caused a bug.","difficulty":"Easy","topic":"Version Control"},{"question":"Explain SQL JOINs with an example.","followUp":"When would you use LEFT JOIN over INNER JOIN?","difficulty":"Medium","topic":"DBMS"}],"ats":{"score":72,"summary":"Solid project experience with modern tech stack.","strengths":["Hands-on project work","Full-stack experience","Active GitHub contributions"],"weaknesses":["No system design projects","Missing cloud keywords"],"keywords":[{"name":"React","status":"found"},{"name":"Docker","status":"partial"},{"name":"Kubernetes","status":"missing"}]}}'
+        return '{"questions":[{"question":"Walk me through your most complex project.","followUp":"What would you change if you rebuilt it today?","difficulty":"Medium","topic":"Projects"}],"ats":{"score":72,"summary":"Solid project experience.","strengths":["Hands-on project work"],"weaknesses":["No system design projects"],"keywords":[{"name":"React","status":"found"},{"name":"Docker","status":"missing"}]}}'
 
     if "timecomplexity" in last or "complexity" in last or "code" in last:
         return '{"timeComplexity":"O(n)","spaceComplexity":"O(n)","explanation":"Optimal approach using hash map.","optimizations":"Already optimal.","score":88}'
@@ -126,7 +120,7 @@ async def fetch_github_profile(request: GitHubRequest):
                 headers=headers, timeout=15.0
             )
             if profile_resp.status_code == 404:
-                raise HTTPException(status_code=404, detail=f"GitHub user not found.")
+                raise HTTPException(status_code=404, detail="GitHub user not found.")
             if profile_resp.status_code == 403:
                 raise HTTPException(status_code=403, detail="GitHub API rate limit hit.")
             if profile_resp.status_code != 200:
