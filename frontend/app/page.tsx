@@ -19,19 +19,23 @@ async function callAI(msgs, sys, tok = 1200) {
       }),
     });
 
-    // If API Limit hit, trigger Demo Mode but don't crash
-    if (r.status === 429 || !r.ok) {
+    if (!r.ok) {
       window.dispatchEvent(new Event("demo-hit"));
-      // Return a string that looks like JSON so parseJSON doesn't fail
-      return `{"_isDemo": true}`; 
+      return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
     }
 
     const d = await r.json();
+
+    // Backend returns _demo:true when Gemini quota is hit (still HTTP 200)
+    if (d._demo === true) {
+      window.dispatchEvent(new Event("demo-hit"));
+    }
+
     return (d.content || []).map(c => c.text || "").join("");
   } catch (err) {
     console.error("AI connection failed:", err);
-    window.dispatchEvent(new Event("demo-hit")); // Trigger demo badge on network fail too
-    return `{"_isDemo": true}`;
+    window.dispatchEvent(new Event("demo-hit"));
+    return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
   }
 }
 // NOTE: parseJSON uses string methods only — NO backtick characters inside regex
@@ -532,7 +536,7 @@ export default function App() {
   const [showPrem, setShowPrem] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   useEffect(() => {
-    const handler = () => { setIsDemo(true); setTimeout(() => setIsDemo(false), 4000); };
+    const handler = () => { setIsDemo(true); };
     window.addEventListener("demo-hit", handler);
     return () => window.removeEventListener("demo-hit", handler);
   }, []);
@@ -633,15 +637,27 @@ function BlueprintTab({ cd, comp, setComp }) {
   const analyse = async () => {
     if (!cd) return;
     setLoading(true); setErr(""); setRes(null);
+    const cgpaNum = parseFloat(cgpa);
+    const blNum = parseInt(bl) || 0;
+    const actuallyEligible = cgpaNum >= cd.minCGPA && blNum <= cd.maxBL;
     const prompt = `Student CGPA=${cgpa}, Backlogs=${bl}, Target: ${cd.name} (${cd.tier}). Min CGPA: ${cd.minCGPA}, Max BL: ${cd.maxBL}. Policy: ${cd.backlog}. Return ONLY valid JSON: {"eligible":true,"score":80,"gaps":["gap"],"actionPlan":["step1","step2","step3","step4"],"timeline":"8 weeks","verdict":"2 sentences","pivotCompanies":["name"]}`;
     try {
       const raw = await callAI([{ role:"user", content:prompt }], null, 600);
       const p = parseJSON(raw);
-      setRes(p || { eligible:parseFloat(cgpa)>=cd.minCGPA&&parseInt(bl)<=cd.maxBL, score:72, gaps:[], actionPlan:["Prepare for OA","DSA daily","Mock interviews","Company research"], timeline:"8 weeks", verdict:"Focus on preparation.", pivotCompanies:[] });
+      if (p) {
+        p.eligible = actuallyEligible;
+        if (!actuallyEligible) {
+          p.score = Math.min(p.score || 30, 30);
+          p.gaps = [
+            cgpaNum < cd.minCGPA ? `CGPA ${cgpaNum} is below the ${cd.minCGPA} minimum` : null,
+            blNum > cd.maxBL ? `${blNum} backlogs exceed the limit of ${cd.maxBL}` : null,
+          ].filter(Boolean);
+        }
+      }
+      setRes(p || { eligible:actuallyEligible, score:actuallyEligible?72:20, gaps:[], actionPlan:["Prepare for OA","DSA daily","Mock interviews","Company research"], timeline:"8 weeks", verdict:actuallyEligible?"You meet basic eligibility.":"Address gaps first.", pivotCompanies:[] });
     } catch (e) {
       setErr(e.message);
-      const ok = parseFloat(cgpa)>=cd.minCGPA&&parseInt(bl)<=cd.maxBL;
-      setRes({ eligible:ok, score:ok?72:28, gaps:ok?[]:["Below cutoff"], actionPlan:["Study OA pattern","DSA daily","Mock interviews","Research company"], timeline:"8-10 weeks", verdict:ok?"You meet basic eligibility.":"Address gaps first.", pivotCompanies:[] });
+      setRes({ eligible:actuallyEligible, score:actuallyEligible?72:20, gaps:actuallyEligible?[]:["Below cutoff"], actionPlan:["Study OA pattern","DSA daily","Mock interviews","Research company"], timeline:"8-10 weeks", verdict:actuallyEligible?"You meet basic eligibility.":"Address gaps first.", pivotCompanies:[] });
     }
     setLoading(false);
   };
@@ -666,8 +682,18 @@ function BlueprintTab({ cd, comp, setComp }) {
       <PgTitle icon={cd.em} title={`${cd.name} — Placement Blueprint`} />
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
         <Card title="Profile Eligibility" ac="cyan">
-          <Fld label="YOUR CGPA"><input type="number" value={cgpa} onChange={e => setCgpa(e.target.value)} step="0.1" min="0" max="10" style={inpStyle} /></Fld>
-          <Fld label="ACTIVE BACKLOGS"><input type="number" value={bl} onChange={e => setBl(e.target.value)} min="0" style={inpStyle} /></Fld>
+        <Fld label="YOUR CGPA">
+          <input type="number" value={cgpa}
+            onChange={e => { const v = parseFloat(e.target.value); if (e.target.value === "" || (v >= 0 && v <= 10)) setCgpa(e.target.value); }}
+            onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v) || v < 0) setCgpa("0"); else if (v > 10) setCgpa("10"); }}
+            step="0.1" min="0" max="10" style={inpStyle} placeholder="0.0 - 10.0" />
+        </Fld>
+        <Fld label="ACTIVE BACKLOGS">
+          <input type="number" value={bl}
+            onChange={e => { const v = parseInt(e.target.value); if (e.target.value === "" || (v >= 0 && v <= 20)) setBl(e.target.value); }}
+            onBlur={e => { const v = parseInt(e.target.value); if (isNaN(v) || v < 0) setBl("0"); else if (v > 20) setBl("20"); }}
+            min="0" max="20" style={inpStyle} placeholder="0 - 20" />
+        </Fld>
           <Btn ch={loading?"Analysing...":"Check Eligibility"} v="primary" full disabled={loading} onClick={analyse} />
           {err && <div style={{ marginTop:8, fontSize:12, color:T.red }}>{err}</div>}
           {res && (
@@ -738,9 +764,24 @@ function AcademicTab({ cd, auth }) {
         <PgTitle icon="🎓" title="Academic Optimizer & Day-1 Predictor" />
         <div style={{ display:"grid", gridTemplateColumns:"1fr 2fr", gap:18, marginBottom:18 }}>
           <Card title="Your Profile" ac="cyan">
-            <Fld label="CURRENT CGPA"><input type="number" value={cgpa} onChange={e => setCgpa(e.target.value)} step="0.1" min="0" max="10" style={inpStyle} /></Fld>
-            <Fld label="GRADUATION YEAR"><input type="number" value={yr} onChange={e => setYr(e.target.value)} style={inpStyle} /></Fld>
-            <Fld label="PENDING BACKLOGS"><input type="number" value={bl} onChange={e => setBl(e.target.value)} min="0" style={inpStyle} /></Fld>
+          <Fld label="CURRENT CGPA">
+            <input type="number" value={cgpa}
+              onChange={e => { const v = parseFloat(e.target.value); if (e.target.value === "" || (v >= 0 && v <= 10)) setCgpa(e.target.value); }}
+              onBlur={e => { const v = parseFloat(e.target.value); if (isNaN(v) || v < 0) setCgpa("0"); else if (v > 10) setCgpa("10"); }}
+              step="0.1" min="0" max="10" style={inpStyle} placeholder="0.0 - 10.0" />
+            </Fld>
+          <Fld label="GRADUATION YEAR">
+            <input type="number" value={yr}
+              onChange={e => { const v = parseInt(e.target.value); if (e.target.value === "" || (v >= 2024 && v <= 2030)) setYr(e.target.value); }}
+              onBlur={e => { const v = parseInt(e.target.value); if (isNaN(v) || v < 2024) setYr("2024"); else if (v > 2030) setYr("2030"); }}
+              min="2024" max="2030" style={inpStyle} placeholder="2024 - 2030" />
+          </Fld>
+          <Fld label="PENDING BACKLOGS">
+            <input type="number" value={bl}
+              onChange={e => { const v = parseInt(e.target.value); if (e.target.value === "" || (v >= 0 && v <= 20)) setBl(e.target.value); }}
+              onBlur={e => { const v = parseInt(e.target.value); if (isNaN(v) || v < 0) setBl("0"); else if (v > 20) setBl("20"); }}
+              min="0" max="20" style={inpStyle} placeholder="0 - 20" />
+          </Fld>
             {cd && <div style={{ fontSize:11, color:T.text3, marginBottom:8 }}>Checking vs: <strong style={{ color:T.violet }}>{cd.name}</strong></div>}
             <div style={{ borderRadius:10, padding:"12px 14px", fontSize:13, fontWeight:700, background:ok?"rgba(34,197,94,.08)":"rgba(239,68,68,.08)", border:`1px solid ${ok?"rgba(34,197,94,.3)":"rgba(239,68,68,.3)"}`, color:ok?T.green:T.red }}>
   {ok ? 
@@ -1290,7 +1331,27 @@ function AptitudeTab({ auth }) {
     </div>
   );
 }
-
+const DEMO_IVQ = [
+  "Tell me about yourself and your most impactful project.",
+  "Describe the hardest bug you ever debugged — what was your process?",
+  "How do you approach picking up a new technology under deadline pressure?",
+  "Tell me about a time you conflicted with a teammate and how you resolved it.",
+  "Where do you see yourself in 3 years, and why does this role interest you?",
+];
+const DEMO_FB = [
+  "Good intro — try to add a specific metric or outcome next time.",
+  "Nice structure. Mention what tools you used for debugging.",
+  "Good approach. Quantify how quickly you ramped up.",
+  "Well handled. Always close by stating what you personally learned.",
+  "Clear direction. Tie it more to the company's specific mission.",
+];
+const DEMO_RPT = {
+  overallScore:7, communication:7, technical:6, confidence:7,
+  keyMistakes:["Answers lacked specific metrics and numbers","Technical explanations need Big-O analysis","STAR format not consistently applied"],
+  strengths:["Clear communication and structured answers","Engaged with every question","Demonstrated self-awareness"],
+  improvements:["Quantify all achievements — use % and numbers","End every technical answer with Big-O analysis","Practise STAR: Situation → Task → Action → Result"],
+  verdict:"PLACEHOLDER"
+};
 // ─── INTERVIEW TAB ────────────────────────────────────────────────────────────
 function InterviewTab({ auth }) {
   const [phase, setPhase] = useState("setup");
@@ -1302,9 +1363,15 @@ function InterviewTab({ auth }) {
   const [aiTalk, setAiTalk] = useState(false); const [lastQ, setLastQ] = useState("");
   const [cd, setCd] = useState(3); const [qd, setQd] = useState(0); const [ivSecs, setIvSecs] = useState(0);
   const msgsRef=useRef([]); const apiRef=useRef([]); const doneRef=useRef(false);
+  const demoModeRef=useRef(false); const demoQIdxRef=useRef(0);
   const camRef=useRef(null); const vLob=useRef(null); const vAct=useRef(null);
   const chatRef=useRef(null); const micRef=useRef(null); const ivTimer=useRef(null);
   const MAX_SECS = 5 * 60;
+  useEffect(() => {
+    const handler = () => { demoModeRef.current = true; };
+    window.addEventListener("demo-hit", handler);
+    return () => window.removeEventListener("demo-hit", handler);
+  }, []);
   // 1. ADD THIS WATCHDOG EFFECT HERE
   useEffect(() => {
     // Logic: If interview is 'active', not yet 'done', and time hits 120s (2 mins)
@@ -1398,17 +1465,24 @@ function InterviewTab({ auth }) {
   }, [cd, phase]);
   const doStart = async () => {
     msgsRef.current=[]; apiRef.current=[]; doneRef.current=false;
+    demoModeRef.current=false; demoQIdxRef.current=0;
     setMsgs([]); setQd(0); setDone(false); setAnswer(""); setReport(null); setThinking(true);
     const seed = { role:"user", content:"The interview is starting. Greet me in one sentence then ask your first question.\nFEEDBACK: [greeting]\nNEXT: [first question]" };
     apiRef.current = [seed];
     try {
       const raw = await callAI([seed], getSys(), 500);
       apiRef.current=[...apiRef.current,{role:"assistant",content:raw}];
+      if (demoModeRef.current) {
+        demoQIdxRef.current=0;
+        const q=DEMO_IVQ[0];
+        pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
+        setThinking(false); startTimer(); return;
+      }
       const {next}=parseResp(raw); const q=(next&&next.length>4)?next:raw.trim();
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
     } catch {
-      const q=persona==="strict"?"Walk me through the most complex system you have built.":"Welcome! Tell me about yourself and your most impactful project.";
-      apiRef.current=[...apiRef.current,{role:"assistant",content:"FEEDBACK: Welcome!\nNEXT: "+q}];
+      demoModeRef.current=true; demoQIdxRef.current=0;
+      const q=DEMO_IVQ[0];
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
     }
     setThinking(false); startTimer();
@@ -1421,6 +1495,18 @@ function InterviewTab({ auth }) {
     apiRef.current=[...apiRef.current,{role:"user",content:a}];
     if (qSoFar>=6){triggerEnd();return;}
     if (isDK(a)&&qSoFar>=3){triggerEnd();return;}
+
+    if (demoModeRef.current) {
+      const nextIdx=demoQIdxRef.current+1;
+      demoQIdxRef.current=nextIdx;
+      if (nextIdx>=DEMO_IVQ.length||qSoFar>=4){triggerEnd();return;}
+      const fb=DEMO_FB[nextIdx-1]||"Good effort — keep it up!";
+      const q=DEMO_IVQ[nextIdx];
+      apiRef.current=[...apiRef.current,{role:"assistant",content:`FEEDBACK: ${fb}\nNEXT: ${q}`}];
+      pushMsg("ai",q,fb); setQd(nextIdx+1); setLastQ(q);
+      speak(fb+"  "+q); return;
+    }
+
     setThinking(true);
     try {
       const raw=await callAI(apiRef.current,getSys(),700);
@@ -1446,6 +1532,12 @@ function InterviewTab({ auth }) {
     setThinking(true);
     const history=msgsRef.current; const pairs=[];
     for (let i=0;i<history.length;i++) { if (history[i].r==="ai"&&history[i+1]?.r==="user") pairs.push({q:history[i].t,a:history[i+1].t}); }
+
+    if (demoModeRef.current) {
+      setReport({ ...DEMO_RPT, verdict:`You answered ${pairs.length} question${pairs.length!==1?"s":""} in this demo session. Communication was clear and structured. To stand out in real drives, add specific metrics to every answer and deepen your technical explanations with Big-O analysis.` });
+      setThinking(false); return;
+    }
+
     if (pairs.length===0){setReport(defRpt(pairs));setThinking(false);return;}
     const transcript=pairs.map((p,i)=>`Question ${i+1}: ${p.q}\nCandidate: ${p.a}`).join("\n\n");
     const prompt=`Analyse this mock interview transcript. Based ONLY on what was actually said, give specific feedback. Return ONLY valid JSON:\n{"overallScore":6,"communication":6,"technical":5,"confidence":6,"keyMistakes":["specific weakness"],"strengths":["specific strength"],"improvements":["concrete tip"],"verdict":"3 sentences referencing actual answers"}\n\n${transcript}`;
@@ -1464,7 +1556,7 @@ function InterviewTab({ auth }) {
     r.onend=()=>setMicOn(false); r.onerror=e=>{setMicOn(false);if(e.error!=="aborted"&&e.error!=="no-speech")alert("Mic error: "+e.error);}; r.start(); micRef.current=r;
   };
   const stopMic = () => { if (micRef.current){try{micRef.current.stop();}catch{}} micRef.current=null; setMicOn(false); };
-  const reset = () => { msgsRef.current=[]; apiRef.current=[]; doneRef.current=false; clearInterval(ivTimer.current); setPhase("setup"); setMsgs([]); setQd(0); setIvSecs(0); setDone(false); setAnswer(""); setReport(null); setAiTalk(false); stopMic(); window.speechSynthesis?.cancel(); };
+  const reset = () => { msgsRef.current=[]; apiRef.current=[]; doneRef.current=false; demoModeRef.current=false; demoQIdxRef.current=0; clearInterval(ivTimer.current); setPhase("setup"); setMsgs([]); setQd(0); setIvSecs(0); setDone(false); setAnswer(""); setReport(null); setAiTalk(false); stopMic(); window.speechSynthesis?.cancel(); };
 
   if (phase==="setup") return (
     <FreeGate auth={auth} feat="Interview Simulator">

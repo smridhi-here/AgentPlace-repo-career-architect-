@@ -13,44 +13,57 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 def _get_demo_response(contents: list) -> str:
-    # Peek at last user message to return the right fake JSON
     last = ""
     for c in reversed(contents):
         if c.get("role") == "user":
             last = c["parts"][0]["text"].lower()
             break
 
-    # Blueprint / eligibility check
-    if "eligible" in last and "actionplan" in last:
-        return '{"eligible":true,"score":78,"gaps":["Improve DSA speed","Practice mock interviews"],"actionPlan":["Complete 50 LeetCode Easy/Medium","Practice 2 mock OA tests per week","Revise DBMS and OS fundamentals","Apply to 5 companies this week"],"timeline":"8 weeks","verdict":"You meet the basic eligibility criteria. Focus on OA preparation and communication skills to stand out.","pivotCompanies":["Wipro","Cognizant","Infosys"]}'
+    # Replace the demo eligible block (around line 26-32) with this:
+if "eligible" in last and "actionplan" in last:
+    backlog_match = re.search(r'backlogs?[^\d]*(\d+)', last)
+    cgpa_match = re.search(r'cgpa\s*=\s*([\d.]+)', last)
+    mincgpa_match = re.search(r'min cgpa:\s*([\d.]+)', last)
 
-    # Resume / ATS / GitHub analysis
+    has_backlogs = backlog_match and int(backlog_match.group(1)) > 0
+    
+    student_cgpa = float(cgpa_match.group(1)) if cgpa_match else 0
+    min_cgpa = float(mincgpa_match.group(1)) if mincgpa_match else 6.0
+    
+    cgpa_ok = student_cgpa >= min_cgpa
+
+    if has_backlogs or not cgpa_ok:
+        reason = "Active backlogs make you ineligible" if has_backlogs else f"CGPA {student_cgpa} is below the minimum {min_cgpa} required"
+        return f'{{"eligible":false,"score":10,"gaps":["{reason}"],"actionPlan":["Clear all backlogs first","Focus on CGPA improvement","Apply after meeting cutoffs"],"timeline":"Next semester","verdict":"Not eligible. {reason}.","pivotCompanies":["Wipro","Cognizant","Infosys"]}}'
+    
+    return '{"eligible":true,"score":78,"gaps":["Improve DSA speed","Practice mock interviews"],"actionPlan":["Complete 50 LeetCode Easy/Medium","Practice 2 mock OA tests per week","Revise DBMS and OS fundamentals","Apply to 5 companies this week"],"timeline":"8 weeks","verdict":"You meet the basic eligibility criteria. Focus on OA preparation and communication skills to stand out.","pivotCompanies":["Wipro","Cognizant","Infosys"]}'
+
     if "ats" in last or "github" in last or "resume" in last:
-        return '{"questions":[{"question":"Walk me through your most complex project and the technical decisions you made.","followUp":"What would you change if you rebuilt it today?","difficulty":"Medium","topic":"Projects"},{"question":"How do you handle merge conflicts in a team Git workflow?","followUp":"Describe a time a bad merge caused a bug.","difficulty":"Easy","topic":"Version Control"},{"question":"Explain the difference between SQL JOINs with an example.","followUp":"When would you use a LEFT JOIN over INNER JOIN?","difficulty":"Medium","topic":"DBMS"}],"ats":{"score":72,"summary":"Candidate shows solid project experience with modern tech stack. Key gaps are in system design exposure and competitive programming depth.","strengths":["Hands-on project work","Full-stack experience","Active GitHub contributions"],"weaknesses":["No system design projects","Missing cloud/DevOps keywords","Limited open source contributions"],"keywords":[{"name":"React","status":"found"},{"name":"REST API","status":"found"},{"name":"Docker","status":"partial"},{"name":"Kubernetes","status":"missing"},{"name":"System Design","status":"missing"}]}}'
+        return '{"questions":[{"question":"Walk me through your most complex project.","followUp":"What would you change if you rebuilt it today?","difficulty":"Medium","topic":"Projects"},{"question":"How do you handle merge conflicts?","followUp":"Describe a time a bad merge caused a bug.","difficulty":"Easy","topic":"Version Control"},{"question":"Explain SQL JOINs with an example.","followUp":"When would you use LEFT JOIN over INNER JOIN?","difficulty":"Medium","topic":"DBMS"}],"ats":{"score":72,"summary":"Solid project experience with modern tech stack.","strengths":["Hands-on project work","Full-stack experience","Active GitHub contributions"],"weaknesses":["No system design projects","Missing cloud keywords"],"keywords":[{"name":"React","status":"found"},{"name":"Docker","status":"partial"},{"name":"Kubernetes","status":"missing"}]}}'
 
-    # OA / complexity analysis
-    if "timecomplexity" in last or "complexity" in last or "big-o" in last or "code" in last:
-        return '{"timeComplexity":"O(n)","spaceComplexity":"O(n)","explanation":"The solution iterates through the array once using a hash map for O(1) lookups. This is the optimal approach for this problem class.","optimizations":"Already optimal. Could reduce space to O(1) only if input is sorted.","score":88}'
+    if "timecomplexity" in last or "complexity" in last or "code" in last:
+        return '{"timeComplexity":"O(n)","spaceComplexity":"O(n)","explanation":"Optimal approach using hash map.","optimizations":"Already optimal.","score":88}'
 
-    # System design critique
     if "system design" in last or "scalability" in last or "components" in last:
-        return '{"score":7,"strengths":["Good separation of concerns","Load balancer shows scalability thinking","Cache layer reduces DB load"],"issues":["No mention of data replication","Single point of failure at API Gateway","Missing rate limiting"],"suggestions":["Add DB read replicas for scale","Add CDN for static assets","Implement circuit breaker pattern"],"scalability":"Medium-High","verdict":"Solid architecture for mid-scale. Add redundancy at every layer and consider async queues for heavy operations to reach production-grade design."}'
+        return '{"score":7,"strengths":["Good separation of concerns"],"issues":["No data replication"],"suggestions":["Add DB read replicas"],"scalability":"Medium-High","verdict":"Solid architecture for mid-scale."}'
 
-    # Interview FEEDBACK/NEXT format
-    if "feedback:" in last or "interview" in last or "question" in last:
-        return "FEEDBACK: Good answer � you structured your response well and showed clear thinking.\nNEXT: Tell me about a time you had to learn something new very quickly under pressure. What was the situation and how did you handle it?"
+    if "feedback" in last or "interview" in last or "question" in last or "answer" in last:
+        return "FEEDBACK: Good answer - you structured your response well.\nNEXT: Tell me about a time you had to learn something new quickly under pressure."
 
-    # Generic fallback
-    return '{"result":"Analysis complete.","status":"success","message":"Demo response � AI quota temporarily reached."}'
+    return '{"result":"Analysis complete.","status":"success","message":"Demo response - AI quota temporarily reached."}'
+
 
 class AIRequest(BaseModel):
     messages: list
     system: str = None
     max_tokens: int = 600
 
+
 class GitHubRequest(BaseModel):
     username: str
+
 
 @app.post("/v1/chat")
 async def chat_with_ai(request: AIRequest):
@@ -72,7 +85,6 @@ async def chat_with_ai(request: AIRequest):
             response = await client.post(url, json={"contents": contents}, timeout=60.0)
 
             if response.status_code == 429:
-    # Quota hit � return smart demo data silently
                 demo_text = _get_demo_response(contents)
                 return {"content": [{"text": demo_text}], "_demo": True}
 
@@ -81,11 +93,11 @@ async def chat_with_ai(request: AIRequest):
 
             res_data = response.json()
 
-            if 'candidates' in res_data and len(res_data['candidates']) > 0:
-                text = res_data['candidates'][0]['content']['parts'][0]['text']
+            if "candidates" in res_data and len(res_data["candidates"]) > 0:
+                text = res_data["candidates"][0]["content"]["parts"][0]["text"]
                 return {"content": [{"text": text}]}
             else:
-                raise HTTPException(status_code=500, detail="AI response empty or blocked by safety filters")
+                raise HTTPException(status_code=500, detail="AI response empty or blocked")
 
         except HTTPException:
             raise
@@ -93,7 +105,6 @@ async def chat_with_ai(request: AIRequest):
             raise HTTPException(status_code=500, detail=str(e))
 
 
-# -- REAL GITHUB ENDPOINT ------------------------------------------------------
 @app.post("/v1/github")
 async def fetch_github_profile(request: GitHubRequest):
     username = request.username.strip()
@@ -115,14 +126,13 @@ async def fetch_github_profile(request: GitHubRequest):
                 headers=headers, timeout=15.0
             )
             if profile_resp.status_code == 404:
-                raise HTTPException(status_code=404, detail=f"GitHub user '{username}' not found. Check the username.")
+                raise HTTPException(status_code=404, detail=f"GitHub user not found.")
             if profile_resp.status_code == 403:
-                raise HTTPException(status_code=403, detail="GitHub API rate limit hit. Wait 1 minute and retry.")
+                raise HTTPException(status_code=403, detail="GitHub API rate limit hit.")
             if profile_resp.status_code != 200:
                 raise HTTPException(status_code=profile_resp.status_code, detail="GitHub API error")
 
             profile = profile_resp.json()
-
             repos_resp = await client.get(
                 f"https://api.github.com/users/{username}/repos?sort=stars&per_page=12&type=owner",
                 headers=headers, timeout=15.0
@@ -173,7 +183,6 @@ async def fetch_github_profile(request: GitHubRequest):
             raise HTTPException(status_code=500, detail=f"Failed to fetch GitHub: {str(e)}")
 
 
-# -- REAL PDF TEXT EXTRACTION ENDPOINT ----------------------------------------
 @app.post("/v1/parse-pdf")
 async def parse_pdf(file: UploadFile = File(...)):
     if not file.filename.endswith(".pdf"):
@@ -182,7 +191,7 @@ async def parse_pdf(file: UploadFile = File(...)):
     try:
         import pypdf
     except ImportError:
-        raise HTTPException(status_code=500, detail="pypdf not installed. Run: pip install pypdf")
+        raise HTTPException(status_code=500, detail="pypdf not installed")
 
     try:
         content = await file.read()
@@ -196,11 +205,11 @@ async def parse_pdf(file: UploadFile = File(...)):
                 text_parts.append(t.strip())
 
         full_text = "\n".join(text_parts)
-        full_text = re.sub(r'\n{3,}', '\n\n', full_text)
-        full_text = re.sub(r' {2,}', ' ', full_text)
+        full_text = re.sub(r"\n{3,}", "\n\n", full_text)
+        full_text = re.sub(r" {2,}", " ", full_text)
 
         if not full_text.strip():
-            raise HTTPException(status_code=422, detail="Could not extract text. PDF may be a scanned image.")
+            raise HTTPException(status_code=422, detail="Could not extract text from PDF.")
 
         return {"text": full_text[:4000], "pages": len(reader.pages)}
 
