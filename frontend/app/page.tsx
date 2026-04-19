@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from "react";
 // ─── API (SECURE PROXY VIA PYTHON AI-ENGINE) ──────────────────────────────────
 async function callAI(msgs, sys, tok = 1200) {
   try {
-    const r = await fetch("${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/chat", {
+    const r = await fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -193,7 +193,7 @@ function useAuth() {
 
   const register = async (name, email, pw) => {
     try {
-      const r = await fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/register", {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/register`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password: pw }),
       });
@@ -208,7 +208,7 @@ function useAuth() {
 
   const login = async (email, pw) => {
     try {
-      const r = await fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/login", {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: pw }),
       });
@@ -271,7 +271,7 @@ const activatePro = async plan => {
   
   // Also save to database so it survives logout/login
   try {
-      await fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/upgrade", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/upgrade`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: user.email, plan: plan }),
@@ -867,7 +867,7 @@ function ResumeTab({ auth }) {
         }
 
         setLoadingStep("Fetching real GitHub profile...");
-        const ghResp = await fetch("${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/github", {
+        const ghResp = await fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/github`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username }),
@@ -900,7 +900,7 @@ ${gh.top_repos.map(r =>
         const formData = new FormData();
         formData.append("file", fileObj);
 
-        const pdfResp = await fetch("${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/parse-pdf", {
+        const pdfResp = await fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/parse-pdf`, {
           method: "POST",
           body: formData,
         });
@@ -1861,3 +1861,4 @@ function PracticeTab({ auth, showPrem }) {
     </div>
   );
 }
+
