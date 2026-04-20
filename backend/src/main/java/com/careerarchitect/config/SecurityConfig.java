@@ -38,7 +38,12 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         // FIX: Allow both localhost and 127.0.0.1 origins
-        config.setAllowedOrigins(List.of("http://localhost:3000", "http://127.0.0.1:3000"));
+        // FIX: Allow localhost, 127.0.0.1, and the live Vercel frontend
+    config.setAllowedOrigins(List.of(
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "https://career-architect-zbs9.vercel.app"
+    ));
         
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
