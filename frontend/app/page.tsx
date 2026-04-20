@@ -203,7 +203,13 @@ function useAuth() {
       // ✅ FIX: Brand new registration gets a fresh 2-hour timer starting NOW
       saveUser({ name: d.name, email: d.email, pro: d.pro, proExp: null, fs: Date.now() });
       return { ok:true };
-    } catch { return { ok:false, err: "Backend offline. Is Docker running?" }; }
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        return { ok: false, err: "Cannot reach backend. It may be waking up (free tier takes ~30s). Please wait and try again." };
+      }
+      return { ok: false, err: msg || "Connection failed. Try again in 30 seconds." };
+    }
   };
 
   const login = async (email, pw) => {
@@ -255,7 +261,13 @@ function useAuth() {
       
       
       return { ok:true };
-    } catch { return { ok:false, err: "Backend offline. Is Docker running?" }; }
+    } catch (err: any) {
+      const msg = err?.message || "";
+      if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+        return { ok: false, err: "Cannot reach backend. It may be waking up (free tier takes ~30s). Please wait and try again." };
+      }
+      return { ok: false, err: msg || "Connection failed. Try again in 30 seconds." };
+    }
   };
 
   const logout = () => { localStorage.removeItem("ap_u"); setUser(null); };
@@ -529,6 +541,14 @@ function TimerBadge({ auth, onUpgrade }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
   const auth = useAuth();
+  useEffect(() => {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const aiUrl = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
+    
+    // This wakes up the servers while the user is still looking at the homepage
+    fetch(`${backendUrl}/actuator/health`).catch(() => {});
+    fetch(`${aiUrl}/docs`).catch(() => {});
+  }, []);
   const [tab, setTab] = useState(0);
   const [dd, setDd] = useState(false);
   const [comp, setComp] = useState(null);
