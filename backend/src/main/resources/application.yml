@@ -7,7 +7,9 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    management:
+
+# ✅ FIX: management must be at ROOT level, not inside jpa
+management:
   endpoints:
     web:
       exposure:
@@ -15,3 +17,6 @@ spring:
   endpoint:
     health:
       show-details: "always"
+
+server:
+  port: ${PORT:8080}

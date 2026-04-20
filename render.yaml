@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: career-architect-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: career-architect-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: career-architect-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: career-architect-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: career-architect-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: career-architect-db
+          property: password
+
+  - type: web
+    name: career-architect-ai
+    runtime: docker
+    dockerfilePath: ./ai-engine/Dockerfile
+    plan: free
+    healthCheckPath: /docs
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+
+databases:
+  - name: career-architect-db
+    plan: free
+    databaseName: career_architect
