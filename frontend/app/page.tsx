@@ -8,34 +8,48 @@ import { useState, useEffect, useRef } from "react";
 // ─── API ──────────────────────────────────────────────────────────────────────
 // ─── API (SECURE PROXY VIA PYTHON AI-ENGINE) ──────────────────────────────────
 async function callAI(msgs, sys, tok = 1200) {
-  try {
-    const r = await fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/chat`, {
+  const AI_URL = `${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/chat`;
+  const payload = {
+    messages: msgs,
+    system: sys || "You are a helpful career assistant.",
+    max_tokens: tok
+  };
+
+  const attemptFetch = async () => {
+    const r = await fetch(AI_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: msgs,
-        system: sys || "You are a helpful career assistant.",
-        max_tokens: tok
-      }),
+      body: JSON.stringify(payload),
     });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  };
 
-    if (!r.ok) {
-      window.dispatchEvent(new Event("demo-hit"));
-      return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
-    }
-
-    const d = await r.json();
-
-    // Backend returns _demo:true when Gemini quota is hit (still HTTP 200)
+  try {
+    // First attempt
+    const d = await attemptFetch();
     if (d._demo === true) {
       window.dispatchEvent(new Event("demo-hit"));
     }
-
     return (d.content || []).map(c => c.text || "").join("");
   } catch (err) {
-    console.error("AI connection failed:", err);
-    window.dispatchEvent(new Event("demo-hit"));
-    return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
+    console.error("AI first attempt failed, retrying in 4s...", err);
+    // Wait 4 seconds — gives Render cold start time to wake up
+    await new Promise(res => setTimeout(res, 4000));
+    try {
+      const d = await attemptFetch();
+      // Retry succeeded — clear demo mode
+      if (d._demo === true) {
+        window.dispatchEvent(new Event("demo-hit"));
+      } else {
+        window.dispatchEvent(new Event("demo-clear"));
+      }
+      return (d.content || []).map(c => c.text || "").join("");
+    } catch (retryErr) {
+      console.error("AI retry also failed:", retryErr);
+      window.dispatchEvent(new Event("demo-hit"));
+      return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
+    }
   }
 }
 // NOTE: parseJSON uses string methods only — NO backtick characters inside regex
@@ -556,9 +570,14 @@ export default function App() {
   const [showPrem, setShowPrem] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   useEffect(() => {
-    const handler = () => { setIsDemo(true); };
-    window.addEventListener("demo-hit", handler);
-    return () => window.removeEventListener("demo-hit", handler);
+    const hitHandler = () => { setIsDemo(true); };
+    const clearHandler = () => { setIsDemo(false); };
+    window.addEventListener("demo-hit", hitHandler);
+    window.addEventListener("demo-clear", clearHandler);
+    return () => {
+      window.removeEventListener("demo-hit", hitHandler);
+      window.removeEventListener("demo-clear", clearHandler);
+    };
   }, []);
   const TABS = [
     { icon:"🏢", label:"Blueprint",     pro:false },
@@ -575,7 +594,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight:"100vh", background:T.bg, color:T.text, fontFamily:"'Segoe UI',system-ui,sans-serif", display:"flex", flexDirection:"column" }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes wave{0%,100%{height:4px}50%{height:18px}}@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}*{box-sizing:border-box}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D1627}::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}`}</style>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes wave{0%,100%{height:4px}50%{height:18px}}@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}*{box-sizing:border-box}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D1627}::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}@media(max-width:640px){.app-layout{flex-direction:column!important;height:auto!important;overflow:visible!important}.app-sidebar{width:100%!important;height:auto!important;flex-direction:row!important;overflow-x:auto!important;flex-shrink:0!important;padding:8px!important}.app-sidebar button{min-width:80px;flex-shrink:0}.app-main{height:auto!important;overflow-y:visible!important}.grid-2col,.grid-3col{grid-template-columns:1fr!important}}`}</style>
       {showPrem && <PremiumModal auth={auth} onClose={() => setShowPrem(false)} />}
 
       <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100 }}>
@@ -615,8 +634,8 @@ export default function App() {
         </div>
       </nav>
 
-      <div style={{ display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 54px)" }}>
-        <aside style={{ width:185, background:T.surf, borderRight:`1px solid ${T.line}`, display:"flex", flexDirection:"column", padding:"12px 8px", gap:3, flexShrink:0, overflowY:"auto" }}>
+      <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 54px)" }}>
+      <aside className="app-sidebar" style={{ width:185, background:T.surf, borderRight:`1px solid ${T.line}`, display:"flex", flexDirection:"column", padding:"12px 8px", gap:3, flexShrink:0, overflowY:"auto" }}>
           {TABS.map(({ icon, label, pro }, i) => (
             <button key={i} onClick={() => { if (pro && !auth.isPro()) setShowPrem(true); else setTab(i); }}
               style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", textAlign:"left", width:"100%", background:tab===i?"rgba(0,229,204,.12)":"none", color:tab===i?T.cyan:pro?T.text3:T.text2, border:tab===i?"1px solid rgba(0,229,204,.3)":"1px solid transparent", fontFamily:"inherit", transition:"all .15s" }}>
@@ -635,7 +654,7 @@ export default function App() {
             }
           </div>
         </aside>
-        <main style={{ flex:1, overflowY:"auto", background:T.bg }}>
+        <main className="app-main" style={{ flex:1, overflowY:"auto", background:T.bg }}>
           {tab===0 && <BlueprintTab cd={cd} comp={comp} setComp={setComp} />}
           {tab===1 && <AcademicTab cd={cd} auth={auth} />}
           {tab===2 && <ResumeTab auth={auth} />}
