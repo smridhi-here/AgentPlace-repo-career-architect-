@@ -58,7 +58,13 @@ class AIRequest(BaseModel):
 class GitHubRequest(BaseModel):
     username: str
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "AgentPlace AI Engine"}
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 @app.post("/v1/chat")
 async def chat_with_ai(request: AIRequest):
     api_key = os.getenv("OPENROUTER_API_KEY")
@@ -92,8 +98,8 @@ async def chat_with_ai(request: AIRequest):
             )
             
 
-            if response.status_code == 429:
-                demo_text = _get_demo_response(messages_for_api)
+            if response.status_code in (429, 503):
+                demo_text = _get_demo_response(contents)
                 return {"content": [{"text": demo_text}], "_demo": True}
 
             if response.status_code != 200:

@@ -21,6 +21,7 @@ async function callAI(msgs, sys, tok = 1200) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (r.status === 404) throw new Error("SERVICE_DOWN");
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.json();
   };
@@ -33,8 +34,11 @@ async function callAI(msgs, sys, tok = 1200) {
     }
     return (d.content || []).map(c => c.text || "").join("");
   } catch (err) {
-    console.error("AI first attempt failed, retrying in 4s...", err);
-    // Wait 4 seconds — gives Render cold start time to wake up
+    if (err.message === "SERVICE_DOWN") {
+      window.dispatchEvent(new Event("demo-hit"));
+      throw err;
+    }
+    console.error("AI first attempt failed, retrying in 8s...", err);
     await new Promise(res => setTimeout(res, 8000));
     try {
       const d = await attemptFetch();
@@ -1768,7 +1772,11 @@ function SDTab({ auth }) {
     const cs=conns.map(c=>{const f=nodes.find(n=>n.id===c.from),t=nodes.find(n=>n.id===c.to);return `${f.l}->${t.l}`;}).join(", ");
     const prompt=`Critique system design. Components: ${arch}. Connections: ${cs||"none"}. Return ONLY valid JSON: {"score":7,"strengths":["s"],"issues":["i"],"suggestions":["sug"],"scalability":"Medium","verdict":"2 sentences"}`;
     try { const raw=await callAI([{role:"user",content:prompt}],null,600); const p=parseJSON(raw); if(p)setCrit(p); else throw new Error("Parse failed"); }
-    catch(e) { setErr(e.message); setCrit({score:6,strengths:["Good component selection","Shows distributed thinking"],issues:["No caching","Single DB bottleneck"],suggestions:["Add Redis cache","Add DB read replicas"],scalability:"Medium",verdict:"Solid start. Add caching and redundancy."}); }
+    catch(e) {
+      const msg = e.message === "SERVICE_DOWN" ? "AI service offline — showing cached result" : e.message;
+      setErr(msg);
+      setCrit({score:6,strengths:["Good component selection","Shows distributed thinking"],issues:["No caching","Single DB bottleneck"],suggestions:["Add Redis cache","Add DB read replicas"],scalability:"Medium",verdict:"Solid start. Add caching and redundancy."});
+    }
     setLoading(false);
   };
   return (
