@@ -18,7 +18,7 @@ def _get_demo_response(contents: list) -> str:
     last = ""
     for c in reversed(contents):
         if c.get("role") == "user":
-            last = c["parts"][0]["text"].lower()
+            last = (c.get("content") or "").lower()
             break
 
     if "eligible" in last and "actionplan" in last:
@@ -61,25 +61,39 @@ class GitHubRequest(BaseModel):
 
 @app.post("/v1/chat")
 async def chat_with_ai(request: AIRequest):
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="Gemini API Key missing")
+        raise HTTPException(status_code=500, detail="OpenRouter API Key missing")
+    
 
-    contents = []
-    if request.system:
-        contents.append({"role": "user", "parts": [{"text": f"SYSTEM INSTRUCTION: {request.system}"}]})
-
-    for m in request.messages:
-        role = "model" if m["role"] == "assistant" else "user"
-        contents.append({"role": role, "parts": [{"text": m["content"]}]})
+    
 
     async with httpx.AsyncClient() as client:
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-            response = await client.post(url, json={"contents": contents}, timeout=60.0)
+            messages_for_api = []
+            if request.system:
+                messages_for_api.append({"role": "system", "content": request.system})
+            for m in request.messages:
+                messages_for_api.append({"role": m["role"], "content": m["content"]})
+
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://agentplace.app",
+                },
+                json={
+                    "model": "meta-llama/llama-3.1-8b-instruct:free",
+                    "messages": messages_for_api,
+                    "max_tokens": request.max_tokens,
+                },
+                timeout=60.0
+            )
+            
 
             if response.status_code == 429:
-                demo_text = _get_demo_response(contents)
+                demo_text = _get_demo_response(messages_for_api)
                 return {"content": [{"text": demo_text}], "_demo": True}
 
             if response.status_code != 200:
@@ -87,8 +101,8 @@ async def chat_with_ai(request: AIRequest):
 
             res_data = response.json()
 
-            if "candidates" in res_data and len(res_data["candidates"]) > 0:
-                text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+            if "choices" in res_data and len(res_data["choices"]) > 0:
+                text = res_data["choices"][0]["message"]["content"]
                 return {"content": [{"text": text}]}
             else:
                 raise HTTPException(status_code=500, detail="AI response empty or blocked")

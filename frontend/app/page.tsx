@@ -483,11 +483,18 @@ function AuthScreen({ auth }) {
   const [tab, setTab] = useState("login");
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [pw, setPw] = useState(""); const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadMsg, setLoadMsg] = useState("Log In");
+  const [showPw, setShowPw] = useState(false);
 
   const submit = async () => {
     setErr("");
     if (!email || !pw) { setErr("Fill all fields."); return; }
     setLoading(true);
+    setLoading(true);
+// ADD these lines:
+    setLoadMsg("Connecting...");
+    setTimeout(() => setLoadMsg("Waking up server (30s)..."), 5000);
+    setTimeout(() => setLoadMsg("Almost there..."), 20000);
     const r = tab === "login" ? await auth.login(email, pw) : (!name ? { ok:false, err:"Name required." } : await auth.register(name, email, pw));
     if (!r.ok) setErr(r.err);
     setLoading(false);
@@ -512,9 +519,14 @@ function AuthScreen({ auth }) {
           </div>
           {tab === "register" && <Fld label="FULL NAME"><input value={name} onChange={e => setName(e.target.value)} placeholder="Arjun Sharma" style={inpStyle} onKeyDown={e => e.key==="Enter" && submit()} disabled={loading} /></Fld>}
           <Fld label="EMAIL"><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@college.edu" style={inpStyle} onKeyDown={e => e.key==="Enter" && submit()} disabled={loading} /></Fld>
-          <Fld label="PASSWORD"><input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="password" style={inpStyle} onKeyDown={e => e.key==="Enter" && submit()} disabled={loading} /></Fld>
+          <Fld label="PASSWORD">
+            <div style={{ position:"relative" }}>
+              <input type={showPw ? "text" : "password"} value={pw} onChange={e => setPw(e.target.value)} placeholder="password" style={{...inpStyle, paddingRight:38}} onKeyDown={e => e.key==="Enter" && submit()} disabled={loading} />
+              <button onClick={() => setShowPw(s => !s)} type="button" style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:T.text3, fontSize:14 }}>{showPw ? "🙈" : "👁"}</button>
+            </div>
+          </Fld>
           {err && <div style={{ background:"rgba(239,68,68,.1)", border:"1px solid rgba(239,68,68,.3)", borderRadius:8, padding:"8px 12px", fontSize:12, color:T.red, marginBottom:12 }}>{err}</div>}
-          <Btn ch={loading ? "Connecting to Database..." : (tab === "login" ? "Log In" : "Create Account")} v="primary" full disabled={loading} onClick={submit} s={{ padding:"13px 0", marginTop:4 }} />
+          <Btn ch={loading ? loadMsg : (tab === "login" ? "Log In" : "Create Account")} v="primary" full disabled={loading} onClick={submit} s={{ padding:"13px 0", marginTop:4 }} />
           <p style={{ textAlign:"center", fontSize:12, color:T.text3, marginTop:14, marginBottom:0 }}>
             {tab === "login" ? "No account? " : "Have account? "}
             <button onClick={() => { setTab(tab==="login"?"register":"login"); setErr(""); }} style={{ background:"none", border:"none", color:T.cyan, fontSize:12, fontWeight:700, cursor:"pointer" }} disabled={loading}>
@@ -634,7 +646,7 @@ export default function App() {
         </div>
       </nav>
 
-      <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 54px)" }}>
+      <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", minHeight:"calc(100vh - 54px)" }}>
       <aside className="app-sidebar" style={{ width:185, background:T.surf, borderRight:`1px solid ${T.line}`, display:"flex", flexDirection:"column", padding:"12px 8px", gap:3, flexShrink:0, overflowY:"auto" }}>
           {TABS.map(({ icon, label, pro }, i) => (
             <button key={i} onClick={() => { if (pro && !auth.isPro()) setShowPrem(true); else setTab(i); }}
@@ -654,7 +666,7 @@ export default function App() {
             }
           </div>
         </aside>
-        <main className="app-main" style={{ flex:1, overflowY:"auto", background:T.bg }}>
+        <main className="app-main" style={{ flex:1, overflowY:"auto", background:T.bg, minWidth:0 }}>
           {tab===0 && <BlueprintTab cd={cd} comp={comp} setComp={setComp} />}
           {tab===1 && <AcademicTab cd={cd} auth={auth} />}
           {tab===2 && <ResumeTab auth={auth} />}
