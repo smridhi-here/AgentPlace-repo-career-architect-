@@ -5,7 +5,7 @@ import httpx
 import os
 import re
 
-app = FastAPI(redirect_slashes=False)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
