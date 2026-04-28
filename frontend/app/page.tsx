@@ -34,8 +34,7 @@ async function callAI(msgs, sys, tok = 1200) {
     }
     return (d.content || []).map(c => c.text || "").join("");
   } catch (err) {
-    if (err.message === "SERVICE_DOWN") {
-      window.dispatchEvent(new Event("demo-hit"));
+    if (err.message === "SERVICE_DOWN" || err.message?.includes("404")) {
       throw err;
     }
     console.error("AI first attempt failed, retrying in 8s...", err);
@@ -51,7 +50,9 @@ async function callAI(msgs, sys, tok = 1200) {
       return (d.content || []).map(c => c.text || "").join("");
     } catch (retryErr) {
       console.error("AI retry also failed:", retryErr);
-      window.dispatchEvent(new Event("demo-hit"));
+      if (!retryErr.message?.includes("SERVICE_DOWN") && !retryErr.message?.includes("404")) {
+        window.dispatchEvent(new Event("demo-hit"));
+      }
       throw retryErr;
     }
   }

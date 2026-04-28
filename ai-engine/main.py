@@ -99,7 +99,7 @@ async def chat_with_ai(request: AIRequest):
             
 
             if response.status_code in (429, 503):
-                demo_text = _get_demo_response(contents)
+                demo_text = _get_demo_response(messages_for_api)
                 return {"content": [{"text": demo_text}], "_demo": True}
 
             if response.status_code != 200:
