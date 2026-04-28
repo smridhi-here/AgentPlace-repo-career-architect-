@@ -35,7 +35,7 @@ async function callAI(msgs, sys, tok = 1200) {
   } catch (err) {
     console.error("AI first attempt failed, retrying in 4s...", err);
     // Wait 4 seconds — gives Render cold start time to wake up
-    await new Promise(res => setTimeout(res, 4000));
+    await new Promise(res => setTimeout(res, 8000));
     try {
       const d = await attemptFetch();
       // Retry succeeded — clear demo mode
@@ -48,7 +48,7 @@ async function callAI(msgs, sys, tok = 1200) {
     } catch (retryErr) {
       console.error("AI retry also failed:", retryErr);
       window.dispatchEvent(new Event("demo-hit"));
-      return "FEEDBACK: Good effort on that answer.\nNEXT: Tell me about a time you faced a challenge and how you overcame it.";
+      throw retryErr;
     }
   }
 }
@@ -481,6 +481,10 @@ function PremiumModal({ auth, onClose }) {
 // ─── AUTH SCREEN ──────────────────────────────────────────────────────────────
 function AuthScreen({ auth }) {
   const [tab, setTab] = useState("login");
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/actuator/health`).catch(() => {});
+    fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/docs`).catch(() => {});
+  }, []);
   const [name, setName] = useState(""); const [email, setEmail] = useState(""); const [pw, setPw] = useState(""); const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadMsg, setLoadMsg] = useState("Log In");
@@ -490,12 +494,12 @@ function AuthScreen({ auth }) {
     setErr("");
     if (!email || !pw) { setErr("Fill all fields."); return; }
     setLoading(true);
-    setLoading(true);
-// ADD these lines:
-    setLoadMsg("Connecting...");
-    setTimeout(() => setLoadMsg("Waking up server (30s)..."), 5000);
-    setTimeout(() => setLoadMsg("Almost there..."), 20000);
-    const r = tab === "login" ? await auth.login(email, pw) : (!name ? { ok:false, err:"Name required." } : await auth.register(name, email, pw));
+    let r = tab === "login" ? await auth.login(email, pw) : (!name ? { ok:false, err:"Name required." } : await auth.register(name, email, pw));
+    if (!r.ok && r.err && r.err.includes("reach backend")) {
+      setErr("Server waking up — auto-retrying in 12s...");
+      await new Promise(res => setTimeout(res, 12000));
+      r = tab === "login" ? await auth.login(email, pw) : await auth.register(name, email, pw);
+    }
     if (!r.ok) setErr(r.err);
     setLoading(false);
   };
@@ -606,7 +610,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight:"100vh", background:T.bg, color:T.text, fontFamily:"'Segoe UI',system-ui,sans-serif", display:"flex", flexDirection:"column" }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes wave{0%,100%{height:4px}50%{height:18px}}@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}*{box-sizing:border-box}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D1627}::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}@media(max-width:640px){.app-layout{flex-direction:column!important;height:auto!important;overflow:visible!important}.app-sidebar{width:100%!important;height:auto!important;flex-direction:row!important;overflow-x:auto!important;flex-shrink:0!important;padding:8px!important}.app-sidebar button{min-width:80px;flex-shrink:0}.app-main{height:auto!important;overflow-y:visible!important}.grid-2col,.grid-3col{grid-template-columns:1fr!important}}`}</style>
+      <style>{`*{box-sizing:border-box}input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transparent;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes wave{0%,100%{height:4px}50%{height:18px}}@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}*{box-sizing:border-box}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D1627}::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}@media(max-width:640px){.app-layout{flex-direction:column!important;height:auto!important;overflow:visible!important}.app-sidebar{width:100%!important;height:auto!important;flex-direction:row!important;overflow-x:auto!important;flex-shrink:0!important;padding:8px!important}.app-sidebar button{min-width:80px;flex-shrink:0}.app-main{height:auto!important;overflow-y:visible!important}.grid-2col,.grid-3col{grid-template-columns:1fr!important}}`}</style>
       {showPrem && <PremiumModal auth={auth} onClose={() => setShowPrem(false)} />}
 
       <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100 }}>
@@ -648,6 +652,11 @@ export default function App() {
 
       <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", minHeight:"calc(100vh - 54px)" }}>
       <aside className="app-sidebar" style={{ width:185, background:T.surf, borderRight:`1px solid ${T.line}`, display:"flex", flexDirection:"column", padding:"12px 8px", gap:3, flexShrink:0, overflowY:"auto" }}>
+      {tab > 0 && (
+            <button onClick={() => setTab(0)} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", width:"100%", background:"none", color:T.text3, border:`1px solid ${T.line}`, fontFamily:"inherit", marginBottom:8 }}>
+              ← Home
+            </button>
+          )}
           {TABS.map(({ icon, label, pro }, i) => (
             <button key={i} onClick={() => { if (pro && !auth.isPro()) setShowPrem(true); else setTab(i); }}
               style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", textAlign:"left", width:"100%", background:tab===i?"rgba(0,229,204,.12)":"none", color:tab===i?T.cyan:pro?T.text3:T.text2, border:tab===i?"1px solid rgba(0,229,204,.3)":"1px solid transparent", fontFamily:"inherit", transition:"all .15s" }}>
