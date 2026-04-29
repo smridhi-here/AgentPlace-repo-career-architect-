@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+﻿from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -101,7 +101,7 @@ async def chat_with_ai(request: AIRequest):
                     "HTTP-Referer": "https://agentplace.app",
                 },
                 json={
-                    "model": "qwen/qwen3-next-80b-a3b-instruct:free",
+                    "model": "nvidia/nemotron-nano-9b-v2:free",
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
