@@ -101,7 +101,7 @@ async def chat_with_ai(request: AIRequest):
                     "HTTP-Referer": "https://agentplace.app",
                 },
                 json={
-                    "model": "meta-llama/llama-3.1-8b-instruct:free",
+                    "model": "mistralai/mistral-7b-instruct:free",
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
