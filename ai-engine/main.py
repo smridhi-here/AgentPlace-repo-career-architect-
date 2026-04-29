@@ -1,4 +1,6 @@
-﻿from fastapi import FastAPI, HTTPException, UploadFile, File
+﻿from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
@@ -6,6 +8,15 @@ import os
 import re
 
 app = FastAPI()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
+
+@app.post("/v1/chat-debug")
+async def chat_debug(request: Request):
+    body = await request.body()
+    return {"received": str(body)}
 
 app.add_middleware(
     CORSMiddleware,
