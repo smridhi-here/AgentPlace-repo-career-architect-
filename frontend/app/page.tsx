@@ -558,7 +558,8 @@ function TimerBadge({ auth, onUpgrade }) {
   }, [auth.isPro()]);
   if (auth.isPro()) {
     const d = auth.user?.proExp ? Math.ceil((auth.user.proExp-Date.now())/86400000) : null;
-    return <div ...><span style={{ fontSize:11, fontWeight:700, color:T.amber }}>{d ? `Pro · ${d}d left` : "Pro · Active"}</span></div>;
+    return <div onClick={onUpgrade} style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(245,158,11,.15)", border:"1px solid rgba(245,158,11,.3)", borderRadius:8, padding:"5px 12px", cursor:"pointer" }}><span style={{ fontSize:11, fontWeight:700, color:T.amber }}>{d ? `Pro · ${d}d left` : "Pro · Active"}</span></div>;
+    
   }
   const m = Math.floor(left/60), s = String(Math.floor(left%60)).padStart(2,"0");
   const col = left < 600 ? T.red : left < 1800 ? T.amber : T.cyan;
