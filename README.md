@@ -1,136 +1,202 @@
-# Career Architect: AI-Orchestrated Placement Suite 🚀
+# AgentPlace — AI-Powered Campus Placement Suite 🚀
 
-**A high-performance Microservices Suite .** This platform transforms a **7.2 CGPA** academic profile into a Placement-Ready technical portfolio through Generative AI, production monitoring, and container orchestration.
+> Transforms a student profile into a placement-ready portfolio using Generative AI, microservices, and real-time mock interviews.
 
----
+**Live Demo:** https://career-architect-zbs9.vercel.app
 
-## 📸 Visual Journey
-image.png
-
-home page
-image.png
-
-1. **The Command Center** - Features the **2-Hour Free Trial Countdown** and the Eligibility Tracker.
-2. **AI Resume Interrogator** - Real-time **ATS Scoring** and Skill Gap Analysis via Gemini 1.5 Flash.
-3. **The Paywall Experience** - Demonstrates the **UPI 991920** integration and Subscription Guard.
+<!-- SCREENSHOT: drag and drop full homepage/landing screen here -->
 
 ---
 
-## 🧠 Key Intelligence Modules
-### 🚀 Core Platform Modules
+## ⚠️ Before Running the Demo
 
-1. **Company Blueprint**
-image.png
-Dynamic strategy engine that generates a 30-day roadmap based on the target company like TCS or Amazon. (Standard Tier)
+This app uses a free Render instance that sleeps after inactivity.
 
+**Open this URL first and wait 30 seconds:**
+👉 https://career-architect-ai-h4ii.onrender.com/health
 
-2. **Academic Tracker**
-image.png
-Manages CGPA and identifies blocker backlogs like Machine Learning for 6th-semester students. (Standard Tier)
+You should see: `{"status":"ok"}` — then the app is fully live.
 
-3. **Resume Builder**
-image.png
-AI-optimized resume generator with professional exporting for software roles. (Standard Tier)
+> The app also auto-wakes on load, but visiting the health URL first ensures zero wait time during a demo.
 
-4. **OA Round Simulator**
-image.png
-Real-time coding environment for Online Assessment practice. (Pro Tier)
-
-5. **Aptitude Training Centre**
-image.png
-Timed sessions for Quantitative and Logical Reasoning with real-time scoring. (Standard Tier)
-
-6. **AI Interviewer**
-image.png
-Real-time mock interviews using Gemini 1.5 Flash with video feedback. (Pro Tier)
-
-7. **System Design Architect**
-image.png
-High-level architectural diagramming for SDE roles. (Pro Tier)
-
-8. **Practice Sheets**
-image.png
-Curated DSA and ML sheets gated by the Subscription Guard. (Pro Tier)
-
-#**DEMO STATE IF LIMIT EXCEEDED**
-image.png
-{(isDemo || forcedemo) && <div ...>⚡ Demo Mode</div>}
-Remove forcedemo when you're done testing.
-this is the quickest — just paste that one line in the console whenever you want to see the badge when you right click-inspect-console and paste command to see demo state and badge when api model limit exceeded.
+**To Demo:**
+Register a free account on the live site — the 2-hour trial starts immediately.
+To see Pro features, use UTR code `991920` in the payment flow.
 
 ---
 
-### 🔐 Subscription and Security Logic
+## 🧠 Features
 
-**Standard Tier (Free)**
-image.png
-* Triggered when `is_pro = false` in PostgreSQL.
-* Grants a 7200-second session timer.
-* Provides access to basic tracking and aptitude modules.
+### 1. 🏢 Company Blueprint Engine
+Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Google, etc.). Checks CGPA and backlog eligibility against real company cutoffs. Free tier.
 
-**Expired Tier**
-image.png
-* Triggered when `is_pro = true` and `pro_expiry` is in the past.
-* Triggers a hard lock and redirects to the Subscription Ended gateway.
-
-**Pro Tier Upgrade**
-image.png
-image.png
-* Activated via the 991920 UPI Merchant Gateway.
-* Removes the session timer and unlocks AI Interviewer and Practice Sheets.
-* "infd left" = Infinite Days Left ✅
----
-
-## 💎 SaaS Architecture & Monetization
-
-### ⏳ 2-Hour Free Trial Logic
-* **Time-Gated Access:** Implemented a **7200-second (2-Hour)** session limit. A real-time timer badge tracks activity.
-* **Premium Gate:** Once the session expires, a dynamic "Paywall" restricts access to advanced modules like System Design.
-
-### 💳 Pro Tier & UPI Integration
-* **Simulated QR Flow:** Generates a Payment QR Code linked to **Merchant Code: 991920**.
-* **Verification Logic:** Implements UTR (Unique Transaction Reference) validation to unlock Pro Practice Sheets (DSA Cheat Sheets, STAR Method Guide).
-
-### 🔐 Subscription Guard (RBAC)
-* **Demo Accounts:** * `free@gmail.com` (Active Trial Mode)
-    * `expired@gmail.com` (Subscription Expired - shows locks)
-* **Password:** `helloworld`
-Login smridhi  → shows Pro ✅  (from localStorage)
-Login expiry@  → shows Lock ✅ (2hr expired long ago)
-Login free@    → shows 2hr timer ✅ (registered recently)
-
-Logout smridhi → Login again  
-→ DB returns pro:true → still shows Pro ✅ (permanent now)
+<!-- SCREENSHOT: drag and drop blueprint tab with eligibility result and action plan here -->
 
 ---
 
-## 🐳 Running with Docker (The "Triangle" Method)
+### 2. 🎓 Academic Optimizer
+Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-exams. Generates a 12-week hybrid study + DSA timeline. Free tier.
 
-### **Option A: The VS Code "Triangle" (Visual Method)**
-1. Ensure the **Docker Extension** is installed.
-2. Right-click **`docker-compose.yml`** -> Select **"Compose Up"**.
-3. Watch the **Docker Whale Icon** turn all services (Frontend, Backend, AI-Engine, DB) **Green**.
+<!-- SCREENSHOT: drag and drop academic tab with timeline here -->
 
-### **Option B: Terminal Command**
-```powershell
-docker-compose up -d --
-### 🛠️ The Technical Stack
+---
 
-| Layer | Technology | Role |
-| :--- | :--- | :--- |
-| **Frontend** | Next.js 15, React 19, Tailwind CSS | Responsive UI & Session Management |
-| **Backend** | Spring Boot 3.2, JPA, Spring Security | Stateless API Gateway & Business Logic |
-| **AI Layer** | FastAPI, Gemini 1.5 API, LangGraph | LLM Orchestration & Resume Parsing |
-| **Database** | PostgreSQL 16 | Relational Persistence & Pro-Tier Status |
-| **Monitoring** | Spring Boot Actuator | Telemetry & Health Checks |
-| **DevOps** | Docker & Docker Compose | Containerization & Orchestration |
-📈 Strategic Impact
-"This project proves that a 3rd-year student can architect a Scalable AI System. By utilizing Dockerized Microservices and Spring Boot Actuator, I have created a production-ready environment that handles both Fuzzy AI Logic and Deterministic College Policy."
-pro features 
-Since the table was hard to paste, use these points in your README.md to explain why the user can "enter" but remains restricted:
+### 3. 📄 ATS Resume & GitHub Analyser
+Reads actual PDF text and live GitHub profile data via the GitHub API. Returns an ATS score, keyword gap analysis, strengths, weaknesses, and 3 AI-generated interview questions based on real projects. Free tier.
 
-🔐 Granular Permissions: Login is permitted for basic account management (CGPA/Backlog tracking).
+<!-- SCREENSHOT: drag and drop resume tab with ATS score ring and GitHub data here -->
 
-💎 AI Access Gate: All Generative AI and Pro Sheets require an active pro_expiry timestamp.
+---
 
-💳 UPI 991920 Gateway: Integrated Merchant Code 991920 for immediate subscription restoration.
+### 4. ⏱ OA Round Simulator
+Timed coding environment (90-minute countdown) with 8 DSA problems. Supports JavaScript execution, test case running, and AI Big-O complexity analysis. Free tier.
+
+<!-- SCREENSHOT: drag and drop OA tab with code editor and timer here -->
+
+---
+
+### 5. 🧠 Aptitude Training Centre
+50-question bank across Quant, Logic, and Verbal. Timed 30-second per question. Tracks score history in localStorage. Free tier.
+
+<!-- SCREENSHOT: drag and drop aptitude quiz in progress here -->
+
+---
+
+### 6. 🎥 Live AI Mock Interview
+Real-time video mock interview with 3 interviewer personas (friendly HR, strict FAANG, behavioural HR). Speech-to-text input, text-to-speech AI responses, 6-question dynamic flow, and a full performance report with scores across communication, technical, and confidence. Pro tier.
+
+<!-- SCREENSHOT: drag and drop interview tab with video panels and conversation here -->
+
+---
+
+### 7. 🗺 System Design Whiteboard
+Drag-and-drop architecture builder with 10 components (Client, Load Balancer, Cache, Database, etc.). Click two nodes to connect them. Click a connection line to remove it. AI critique gives score, strengths, issues, and suggestions. Pro tier.
+
+<!-- SCREENSHOT: drag and drop system design tab with nodes and AI critique here -->
+
+---
+
+### 8. 📋 Practice Sheets
+DSA cheat sheet, interview patterns (STAR, coding flow, system design framework), aptitude formulae, and HR guide. Pro tier.
+
+<!-- SCREENSHOT: drag and drop practice sheet tab here -->
+
+---
+
+## 💳 Subscription System
+
+### Free Trial (2 Hours)
+- 7200-second countdown timer shown in navbar
+- Access to Blueprint, Academic, Resume, OA, Aptitude tabs
+- Timer stored per account using account creation timestamp
+
+### Pro Tier Upgrade Flow
+
+<!-- SCREENSHOT: drag and drop pro upgrade modal with QR code here -->
+
+- Select plan (Monthly ₹199 / Quarterly ₹499 / Yearly ₹999)
+- Scan QR code → enter UTR number `991920` → verified instantly
+- Unlocks Interview Simulator, System Design, Practice Sheets
+- Pro status persisted in PostgreSQL database (survives logout/login)
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Next.js 15    │────▶│  Spring Boot 3.2 │────▶│  PostgreSQL 16  │
+│   (Vercel)      │     │  (Docker)        │     │  (Docker)       │
+└────────┬────────┘     └──────────────────┘     └─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│   FastAPI       │────▶  OpenRouter AI (nvidia/mistral free tier)
+│   (Render)      │────▶  GitHub REST API
+│                 │────▶  pypdf (resume parsing)
+└─────────────────┘
+```
+
+### Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | Next.js 15, React 19 | UI, session management, timer logic |
+| Backend | Spring Boot 3.2, JPA | Auth, user data, Pro status |
+| AI Engine | FastAPI, OpenRouter | LLM calls, GitHub fetch, PDF parse |
+| Database | PostgreSQL 16 | User accounts, Pro expiry |
+| Monitoring | Spring Boot Actuator | Health checks |
+| DevOps | Docker, Docker Compose | Local orchestration |
+| Deployment | Vercel + Render | Frontend + AI engine hosting |
+
+---
+
+## 🐳 Running Locally
+
+### Option A — Docker (recommended)
+
+```bash
+docker-compose up -d --build
+```
+
+Then open: http://localhost:3000
+
+### Option B — Manual
+
+**AI Engine (Python):**
+```bash
+cd ai-engine
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+**Backend (Java):**
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+**Frontend (Next.js):**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Environment Variables
+
+Create `.env.local` in the frontend folder:
+```
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:8000
+```
+
+Create `.env` in the ai-engine folder:
+```
+OPENROUTER_API_KEY=your_key_here
+GITHUB_TOKEN=your_token_here
+```
+
+---
+
+## 📁 Project Structure
+
+```
+newagent/
+├── frontend/          # Next.js app (page.tsx is the entire frontend)
+├── backend/           # Spring Boot auth + user API
+├── ai-engine/         # FastAPI — LLM, GitHub, PDF endpoints
+│   └── main.py
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## 🔑 Key Design Decisions
+
+- **Single-file frontend** — entire UI in `page.tsx` for easy demonstration and deployment
+- **Free AI tier** — uses OpenRouter free models with a demo fallback when quota is hit
+- **Demo mode** — when AI is unavailable, realistic sample data is shown with a visible banner rather than errors
+- **Auto-wake** — app pings the Render AI engine on startup to minimise cold-start delay
+- **CGPA/backlog validation** — eligibility enforced client-side against real company cutoffs, AI score overridden if ineligible

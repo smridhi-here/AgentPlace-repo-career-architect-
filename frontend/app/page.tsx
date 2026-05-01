@@ -580,10 +580,18 @@ export default function App() {
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     const aiUrl = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
-    
-    // This wakes up the servers while the user is still looking at the homepage
     fetch(`${backendUrl}/actuator/health`).catch(() => {});
-    fetch(`${aiUrl}/docs`).catch(() => {});
+    // Wake Render AI engine — retries every 10s until alive
+    const wakeAI = async () => {
+      for(let i=0; i<6; i++) {
+        try {
+          const r = await fetch(`${aiUrl}/health`);
+          if(r.ok) { console.log("AI engine awake"); return; }
+        } catch {}
+        await new Promise(res => setTimeout(res, 10000));
+      }
+    };
+    wakeAI();
   }, []);
   const [tab, setTab] = useState(0);
   const [dd, setDd] = useState(false);
