@@ -1795,7 +1795,7 @@ function SDTab({ auth }) {
               style={{ position:"relative", height:380, background:T.bg, borderRadius:16, border:`1px solid ${T.line}`, overflow:"hidden", cursor:drag?"grabbing":"default" }}>
               <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", pointerEvents:"none" }}>
                 <defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill={T.cyan}/></marker></defs>
-                {conns.map((c,i) => { const f=nodes.find(n=>n.id===c.from),t=nodes.find(n=>n.id===c.to); if(!f||!t)return null; return <g key={i}><line x1={f.x+32} y1={f.y+32} x2={t.x+32} y2={t.y+32} stroke={T.cyan} strokeWidth="2" strokeDasharray="7,3" markerEnd="url(#arr)" pointerEvents="none"/><line x1={f.x+32} y1={f.y+32} x2={t.x+32} y2={t.y+32} stroke="transparent" strokeWidth="14" style={{cursor:"pointer"}} onClick={e=>{e.stopPropagation();setConns(cs=>cs.filter((_,j)=>j!==i));}}/></g>; })}
+                {conns.map((c,i) => { const f=nodes.find(n=>n.id===c.from),t=nodes.find(n=>n.id===c.to); if(!f||!t)return null; return <g key={i} style={{cursor:"pointer"}} onClick={e=>{e.stopPropagation();setConns(cs=>cs.filter((_,j)=>j!==i));}}><line x1={f.x+32} y1={f.y+32} x2={t.x+32} y2={t.y+32} stroke={T.cyan} style={{strokeWidth:2,strokeDasharray:"7,3"}} markerEnd="url(#arr)"/><line x1={f.x+32} y1={f.y+32} x2={t.x+32} y2={t.y+32} stroke="transparent" style={{strokeWidth:20}}/></g>; })}
                 
               </svg>
               {nodes.map(nd => (
