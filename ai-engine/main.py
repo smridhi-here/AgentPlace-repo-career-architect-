@@ -3,6 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 import httpx
 import os
 import re
@@ -62,7 +63,7 @@ def _get_demo_response(contents: list) -> str:
 
 class AIRequest(BaseModel):
     messages: list
-    system: str = None
+    system: Optional[str] = None
     max_tokens: int = 600
 
 
