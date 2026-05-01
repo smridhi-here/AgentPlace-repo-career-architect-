@@ -499,13 +499,20 @@ function AuthScreen({ auth }) {
     setErr("");
     if (!email || !pw) { setErr("Fill all fields."); return; }
     setLoading(true);
-    let r = tab === "login" ? await auth.login(email, pw) : (!name ? { ok:false, err:"Name required." } : await auth.register(name, email, pw));
-    if (!r.ok && r.err && r.err.includes("reach backend")) {
-      setErr("Server waking up — auto-retrying in 12s...");
-      await new Promise(res => setTimeout(res, 12000));
-      r = tab === "login" ? await auth.login(email, pw) : await auth.register(name, email, pw);
+    const attempt = async () => tab === "login" ? await auth.login(email, pw) : (!name ? { ok:false, err:"Name required." } : await auth.register(name, email, pw));
+    const isNetErr = (r) => !r.ok && (r.err?.includes("reach backend") || r.err?.includes("Load failed") || r.err?.includes("Connection failed") || r.err?.includes("fetch") || r.err?.includes("Failed"));
+    let r = await attempt();
+    if (isNetErr(r)) {
+      setErr("Server waking up... retrying in 10s (1/2)");
+      await new Promise(res => setTimeout(res, 10000));
+      r = await attempt();
     }
-    if (!r.ok) setErr(r.err);
+    if (isNetErr(r)) {
+      setErr("Still waking up... retrying in 12s (2/2)");
+      await new Promise(res => setTimeout(res, 12000));
+      r = await attempt();
+    }
+    if (!r.ok) setErr(r.err || "Login failed. Please try again.");
     setLoading(false);
   };
 
@@ -624,7 +631,30 @@ export default function App() {
 
   return (
     <div style={{ minHeight:"100vh", background:T.bg, color:T.text, fontFamily:"'Segoe UI',system-ui,sans-serif", display:"flex", flexDirection:"column" }}>
-      <style>{`*{box-sizing:border-box}input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transparent;}@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}@keyframes wave{0%,100%{height:4px}50%{height:18px}}@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}*{box-sizing:border-box}::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0D1627}::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}@media(max-width:640px){.app-layout{flex-direction:column!important;height:auto!important;overflow:visible!important}.app-sidebar{width:100%!important;height:auto!important;flex-direction:row!important;overflow-x:auto!important;flex-shrink:0!important;padding:8px!important}.app-sidebar button{min-width:80px;flex-shrink:0}.app-main{height:auto!important;overflow-y:visible!important}.grid-2col,.grid-3col{grid-template-columns:1fr!important}}`}</style>
+      <style>{`
+*{box-sizing:border-box}
+input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transparent;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes wave{0%,100%{height:4px}50%{height:18px}}
+@keyframes cdAnim{0%{transform:scale(1.8);opacity:0}30%{transform:scale(1);opacity:1}80%{opacity:1}100%{transform:scale(.6);opacity:0}}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0D1627}
+::-webkit-scrollbar-thumb{background:#1E2D45;border-radius:3px}
+
+@media(max-width:640px){
+  .app-layout{flex-direction:column!important;height:auto!important;overflow:visible!important}
+  .app-sidebar{display:none!important}
+  .app-main{height:auto!important;overflow-y:visible!important;padding-bottom:80px!important}
+  .grid-2col,.grid-3col{grid-template-columns:1fr!important}
+  .mobile-bottom-bar{display:flex!important}
+  .nav-user-name{display:none!important}
+  .nav-timer-label{display:none!important}
+}
+@media(min-width:641px){
+  .mobile-bottom-bar{display:none!important}
+}
+`}</style>
       {showPrem && <PremiumModal auth={auth} onClose={() => setShowPrem(false)} />}
 
       <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100 }}>
@@ -650,7 +680,7 @@ export default function App() {
               <span style={{ color:T.text3 }}>▾</span>
             </button>
             {dd && (
-              <div style={{ position:"absolute", right:0, top:44, width:180, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:14, zIndex:200, overflow:"hidden" }} onClick={() => setDd(false)}>
+              <div style={{ position:"absolute", right:0, top:44, width:180, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:14, zIndex:200, overflow:"hidden", maxWidth:"90vw" }} onClick={() => setDd(false)}>
                 <div style={{ padding:"12px 16px", borderBottom:`1px solid ${T.line}` }}>
                   <div style={{ fontSize:13, fontWeight:700 }}>{auth.user.name}</div>
                   <div style={{ fontSize:11, color:T.text3 }}>{auth.user.email}</div>
@@ -664,7 +694,7 @@ export default function App() {
         </div>
       </nav>
 
-      <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", minHeight:"calc(100vh - 54px)" }}>
+      <div className="app-layout" style={{ display:"flex", flex:1, overflow:"hidden", minHeight:"calc(100vh - 54px)", maxWidth:"100vw" }}>
       <aside className="app-sidebar" style={{ width:185, background:T.surf, borderRight:`1px solid ${T.line}`, display:"flex", flexDirection:"column", padding:"12px 8px", gap:3, flexShrink:0, overflowY:"auto" }}>
       {tab > 0 && (
             <button onClick={() => setTab(0)} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", width:"100%", background:"none", color:T.text3, border:`1px solid ${T.line}`, fontFamily:"inherit", marginBottom:8 }}>
@@ -690,6 +720,13 @@ export default function App() {
           </div>
         </aside>
         <main className="app-main" style={{ flex:1, overflowY:"auto", background:T.bg, minWidth:0 }}>
+          {tab > 0 && (
+            <div style={{ display:"none" }} className="mobile-back-bar">
+              <style>{`@media(max-width:640px){.mobile-back-bar{display:flex!important;padding:10px 16px;background:#0D1627;border-bottom:1px solid #1E2D45;align-items:center;gap:10px}}`}</style>
+              <button onClick={() => setTab(0)} style={{ background:"#162035", border:"1px solid #2A3F5F", color:"#8FA4C0", cursor:"pointer", borderRadius:8, padding:"7px 14px", fontFamily:"inherit", fontSize:13, display:"flex", alignItems:"center", gap:6 }}>← Back</button>
+              <span style={{ fontSize:13, fontWeight:700, color:"#E2EAF4" }}>{TABS[tab]?.label}</span>
+            </div>
+          )}
           {tab===0 && <BlueprintTab cd={cd} comp={comp} setComp={setComp} />}
           {tab===1 && <AcademicTab cd={cd} auth={auth} />}
           {tab===2 && <ResumeTab auth={auth} />}
@@ -698,7 +735,17 @@ export default function App() {
           {tab===5 && <InterviewTab auth={auth} />}
           {tab===6 && <SDTab auth={auth} />}
           {tab===7 && <PracticeTab auth={auth} showPrem={() => setShowPrem(true)} />}
-        </main>
+          </main>
+      </div>
+      <div className="mobile-bottom-bar" style={{ position:"fixed", bottom:0, left:0, right:0, height:60, background:"#0D1627", borderTop:"1px solid #1E2D45", display:"none", alignItems:"center", justifyContent:"space-around", zIndex:150, paddingBottom:4 }}>
+        {TABS.map(({ icon, label, pro }, i) => (
+          <button key={i} onClick={() => { if(pro && !auth.isPro()) setShowPrem(true); else setTab(i); }}
+            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2, background:"none", border:"none", color:tab===i?"#00E5CC":pro?"#4A6080":"#8FA4C0", fontSize:9, fontWeight:700, cursor:"pointer", fontFamily:"inherit", padding:"4px 2px", minWidth:40, borderTop:tab===i?"2px solid #00E5CC":"2px solid transparent", paddingTop:6 }}>
+            <span style={{ fontSize:17 }}>{icon}</span>
+            <span>{label.length > 7 ? label.slice(0,7)+"…" : label}</span>
+            {pro && !auth.isPro() && <span style={{ fontSize:8, background:"#F59E0B", color:"#000", borderRadius:3, padding:"1px 3px" }}>PRO</span>}
+          </button>
+        ))}
       </div>
     </div>
   );
