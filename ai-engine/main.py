@@ -120,10 +120,12 @@ async def chat_with_ai(request: AIRequest):
             res_data = response.json()
 
             if "choices" in res_data and len(res_data["choices"]) > 0:
-                text = res_data["choices"][0]["message"]["content"]
-    # Strip markdown code fences if AI wraps JSON in them
+                text = res_data["choices"][0]["message"]["content"] or ""
                 text = re.sub(r"^```(?:json)?\s*", "", text.strip())
                 text = re.sub(r"\s*```$", "", text.strip())
+                if not text:
+                    demo_text = _get_demo_response(messages_for_api)
+                    return {"content": [{"text": demo_text}], "_demo": True}
                 return {"content": [{"text": text}]}
             else:
                 raise HTTPException(status_code=500, detail="AI response empty or blocked")
