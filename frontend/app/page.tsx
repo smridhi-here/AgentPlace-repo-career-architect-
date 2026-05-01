@@ -1821,7 +1821,10 @@ function SDTab({ auth }) {
             </div>
             <div style={{ display:"flex", gap:9, marginTop:12 }}>
               <Btn ch={loading?"Analysing...":"Get AI Architecture Critique"} v="primary" disabled={!nodes.length||loading} onClick={critique} />
-              <Btn ch="Undo Line" v="outline" onClick={() => setConns(cs => cs.slice(0,-1))} />
+              <Btn ch="↩ Undo" v="outline" onClick={() => {
+                if(conns.length > 0) { setConns(cs => cs.slice(0,-1)); }
+                else if(nodes.length > 0) { setNodes(ns => ns.slice(0,-1)); }
+              }} />
               <Btn ch="Clear All" v="outline" onClick={() => {setNodes([]);setConns([]);setCrit(null);setErr("");}} />
             </div>
             {err && <div style={{ marginTop:8, fontSize:12, color:T.red }}>{err}</div>}
