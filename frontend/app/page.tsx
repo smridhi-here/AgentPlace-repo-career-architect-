@@ -503,13 +503,13 @@ function AuthScreen({ auth }) {
     const isNetErr = (r) => !r.ok && (r.err?.includes("reach backend") || r.err?.includes("Load failed") || r.err?.includes("Connection failed") || r.err?.includes("fetch") || r.err?.includes("Failed"));
     let r = await attempt();
     if (isNetErr(r)) {
-      setErr("Server waking up... retrying in 10s (1/2)");
-      await new Promise(res => setTimeout(res, 10000));
+      setErr("Connecting to server... retrying (1/2)");
+      await new Promise(res => setTimeout(res, 6000));
       r = await attempt();
     }
     if (isNetErr(r)) {
-      setErr("Still waking up... retrying in 12s (2/2)");
-      await new Promise(res => setTimeout(res, 12000));
+      setErr("Still connecting... retrying (2/2)");
+      await new Promise(res => setTimeout(res, 8000));
       r = await attempt();
     }
     if (!r.ok) setErr(r.err || "Login failed. Please try again.");
@@ -602,6 +602,12 @@ export default function App() {
   }, []);
   const [tab, setTab] = useState(0);
   const [dd, setDd] = useState(false);
+  useEffect(() => {
+    if (!dd) return;
+    const close = () => setDd(false);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [dd]);
   const [comp, setComp] = useState(null);
   const cd = comp ? COS[comp] : null;
   const [showPrem, setShowPrem] = useState(false);
@@ -630,7 +636,7 @@ export default function App() {
   if (!auth.user) return <AuthScreen auth={auth} />;
 
   return (
-    <div style={{ minHeight:"100vh", background:T.bg, color:T.text, fontFamily:"'Segoe UI',system-ui,sans-serif", display:"flex", flexDirection:"column" }}>
+    <div style={{ minHeight:"100vh", background:T.bg, color:T.text, fontFamily:"'Segoe UI',system-ui,sans-serif", display:"flex", flexDirection:"column", overflowX:"hidden", maxWidth:"100vw" }}>
       <style>{`
 *{box-sizing:border-box}
 input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transparent;}
@@ -657,7 +663,7 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
 `}</style>
       {showPrem && <PremiumModal auth={auth} onClose={() => setShowPrem(false)} />}
 
-      <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100 }}>
+      <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100, overflow:"hidden", maxWidth:"100vw" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <div style={{ width:30, height:30, borderRadius:9, background:grad, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, fontSize:14, color:"#fff" }}>A</div>
           <span style={{ fontWeight:800, fontSize:15, background:grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>AgentPlace</span>
@@ -676,7 +682,7 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
           <div style={{ position:"relative" }}>
             <button onClick={() => setDd(o => !o)} style={{ display:"flex", alignItems:"center", gap:8, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:9, padding:"6px 10px", cursor:"pointer", fontFamily:"inherit", color:T.text, fontSize:12 }}>
               <div style={{ width:24, height:24, borderRadius:"50%", background:grad, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff" }}>{auth.user.name?.[0]?.toUpperCase()}</div>
-              {auth.user.name}
+              <span className="nav-user-name">{auth.user.name}</span>
               <span style={{ color:T.text3 }}>▾</span>
             </button>
             {dd && (
