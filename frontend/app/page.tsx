@@ -744,14 +744,19 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
           </main>
       </div>
       <div className="mobile-bottom-bar" style={{ position:"fixed", bottom:0, left:0, right:0, height:60, background:"#0D1627", borderTop:"1px solid #1E2D45", display:"none", alignItems:"center", justifyContent:"space-around", zIndex:150, paddingBottom:4 }}>
-        {TABS.map(({ icon, label, pro }, i) => (
+        {TABS.slice(0,7).map(({ icon, label, pro }, i) => (
           <button key={i} onClick={() => { if(pro && !auth.isPro()) setShowPrem(true); else setTab(i); }}
-            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2, background:"none", border:"none", color:tab===i?"#00E5CC":pro?"#4A6080":"#8FA4C0", fontSize:9, fontWeight:700, cursor:"pointer", fontFamily:"inherit", padding:"4px 2px", minWidth:40, borderTop:tab===i?"2px solid #00E5CC":"2px solid transparent", paddingTop:6 }}>
-            <span style={{ fontSize:17 }}>{icon}</span>
-            <span>{label.length > 7 ? label.slice(0,7)+"…" : label}</span>
-            {pro && !auth.isPro() && <span style={{ fontSize:8, background:"#F59E0B", color:"#000", borderRadius:3, padding:"1px 3px" }}>PRO</span>}
+            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2, background:"none", border:"none", color:tab===i?"#00E5CC":pro?"#4A6080":"#8FA4C0", fontSize:9, fontWeight:700, cursor:"pointer", fontFamily:"inherit", padding:"4px 2px", minWidth:36, borderTop:tab===i?"2px solid #00E5CC":"2px solid transparent", paddingTop:6 }}>
+            <span style={{ fontSize:16 }}>{icon}</span>
+            <span style={{ fontSize:8 }}>{label.length > 6 ? label.slice(0,6)+"…" : label}</span>
+            {pro && !auth.isPro() && <span style={{ fontSize:7, background:"#F59E0B", color:"#000", borderRadius:3, padding:"1px 3px" }}>PRO</span>}
           </button>
         ))}
+        <button onClick={auth.logout}
+          style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2, background:"none", border:"none", color:"#EF4444", fontSize:9, fontWeight:700, cursor:"pointer", fontFamily:"inherit", padding:"4px 2px", minWidth:36, borderTop:"2px solid transparent", paddingTop:6 }}>
+          <span style={{ fontSize:16 }}>🚪</span>
+          <span style={{ fontSize:8 }}>Logout</span>
+        </button>
       </div>
     </div>
   );
@@ -807,7 +812,7 @@ function BlueprintTab({ cd, comp, setComp }) {
   return (
     <div style={{ padding:28 }}>
       <PgTitle icon={cd.em} title={`${cd.name} — Placement Blueprint`} />
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }} className="grid-3col">
         <Card title="Profile Eligibility" ac="cyan">
         <Fld label="YOUR CGPA">
           <input type="number" value={cgpa}
@@ -1680,7 +1685,7 @@ function InterviewTab({ auth }) {
     if (micRef.current){try{micRef.current.stop();}catch{}} window.speechSynthesis?.cancel();
     const r=new SR(); r.continuous=true; r.interimResults=true; r.lang="en-IN";
     r.onstart=()=>setMicOn(true); r.onresult=e=>setAnswer(Array.from(e.results).map(x=>x[0].transcript).join(""));
-    r.onend=()=>setMicOn(false); r.onerror=e=>{setMicOn(false);if(e.error!=="aborted"&&e.error!=="no-speech")alert("Mic error: "+e.error);}; r.start(); micRef.current=r;
+    r.onend=()=>setMicOn(false); r.onerror=e=>{setMicOn(false);if(e.error!=="aborted"&&e.error!=="no-speech"){if(e.error==="service-not-allowed"||e.error==="not-allowed"){setCamErr("Mic needs Chrome browser. Safari blocks speech recognition. Please open in Chrome.");}else{setCamErr("Mic error: "+e.error);}}}; r.start(); micRef.current=r;
   };
   const stopMic = () => { if (micRef.current){try{micRef.current.stop();}catch{}} micRef.current=null; setMicOn(false); };
   const reset = () => { msgsRef.current=[]; apiRef.current=[]; doneRef.current=false; demoModeRef.current=false; demoQIdxRef.current=0; clearInterval(ivTimer.current); setPhase("setup"); setMsgs([]); setQd(0); setIvSecs(0); setDone(false); setAnswer(""); setReport(null); setAiTalk(false); stopMic(); window.speechSynthesis?.cancel(); };
@@ -1750,8 +1755,7 @@ function InterviewTab({ auth }) {
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
         <div style={{ background:"#04090F", borderRadius:15, border:`2px solid ${aiTalk?T.cyan:T.line}`, aspectRatio:"16/9", display:"flex", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:10, position:"relative", transition:"border-color .3s" }}>
-          <div style={{ fontSize:54 }}>{p.em}</div>
-          <div style={{ fontSize:14, fontWeight:700 }}>{p.name}</div>
+        <div style={{ fontSize:54 }}>{p.em}</div>
           {aiTalk && <div style={{ display:"flex", alignItems:"flex-end", gap:3, height:22 }}>{[4,11,18,11,4].map((h,i) => <div key={i} style={{ width:3, borderRadius:2, background:T.cyan, height:h, animation:"wave .55s infinite alternate", animationDelay:`${i*.1}s` }}/>)}</div>}
           {aiTalk && <div style={{ position:"absolute", top:10, right:10, background:T.cyan, color:T.bg, borderRadius:14, padding:"3px 10px", fontSize:11, fontWeight:800 }}>Speaking</div>}
           <div style={{ position:"absolute", bottom:10, left:10, background:"rgba(0,0,0,.8)", borderRadius:8, padding:"4px 10px", fontSize:12, fontWeight:700 }}>{p.name}</div>
