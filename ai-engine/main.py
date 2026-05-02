@@ -126,7 +126,7 @@ async def root():
 async def health():
     return {"status": "ok"}
 
-@app.get("/ping")
+@app.api_route("/ping", methods=["GET", "HEAD"])
 async def ping():
     return {"pong": True}
 @app.post("/v1/chat")
