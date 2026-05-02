@@ -1576,7 +1576,13 @@ function InterviewTab({ auth }) {
 
 
   useEffect(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [msgs]);
-  const setVideoRef = el => { vAct.current = el; if (el && camRef.current) el.srcObject = camRef.current; };
+  const setVideoRef = el => {
+    if (!el) return;
+    vAct.current = el;
+    if (camRef.current && el.srcObject !== camRef.current) {
+      el.srcObject = camRef.current;
+    }
+  };
 
   const P = { friendly:{name:"Priya Sharma",title:"Senior HR · Campus",em:"👩"}, strict:{name:"Rahul Kapoor",title:"SDE-3 · FAANG",em:"👨"}, hr:{name:"Neha Gupta",title:"HR Manager · MNC",em:"👩"} };
   const p = P[persona];
@@ -1604,16 +1610,37 @@ function InterviewTab({ auth }) {
       if (ni !== -1) clean = clean.slice(ni+5);
       clean = clean.replace(/END_INTERVIEW/gi,"").split("\n").join(" ").trim().slice(0,420);
       if (!clean) return;
-      const ut = new SpeechSynthesisUtterance(clean);
-      ut.rate = persona==="strict"?.87:.93; ut.pitch = persona==="strict"?.82:1.05;
       const go = () => {
         const vs = window.speechSynthesis.getVoices();
         const pick = vs.find(v => v.lang.startsWith("en")&&(v.name.includes("Google")||v.name.includes("Samantha")||v.name.includes("Alex"))) || vs.find(v => v.lang.startsWith("en"));
+        const ut = new SpeechSynthesisUtterance(clean);
+        ut.rate = persona==="strict"?.87:.93;
+        ut.pitch = persona==="strict"?.82:1.05;
         if (pick) ut.voice = pick;
-        setAiTalk(true); ut.onend=ut.onerror=()=>setAiTalk(false); window.speechSynthesis.speak(ut);
+        ut.onstart = () => setAiTalk(true);
+        ut.onend = () => setAiTalk(false);
+        ut.onerror = (e) => {
+          setAiTalk(false);
+          // If interrupted, retry once after 300ms
+          if (e.error === "interrupted" || e.error === "canceled") {
+            setTimeout(() => {
+              const ut2 = new SpeechSynthesisUtterance(clean);
+              ut2.rate = ut.rate; ut2.pitch = ut.pitch; ut2.voice = ut.voice;
+              ut2.onstart = () => setAiTalk(true);
+              ut2.onend = () => setAiTalk(false);
+              ut2.onerror = () => setAiTalk(false);
+              window.speechSynthesis.speak(ut2);
+            }, 300);
+          }
+        };
+        window.speechSynthesis.speak(ut);
       };
-      window.speechSynthesis.getVoices().length ? go() : window.speechSynthesis.addEventListener("voiceschanged", go, { once:true });
-    }, 150);
+      if (window.speechSynthesis.getVoices().length) {
+        go();
+      } else {
+        window.speechSynthesis.addEventListener("voiceschanged", go, { once:true });
+      }
+    }, 400);
   };
   const pushMsg = (role, text, fb) => { const m={r:role,t:text,fb:fb||null}; msgsRef.current=[...msgsRef.current,m]; setMsgs([...msgsRef.current]); };
   const isDK = t => { const l=t.toLowerCase().trim(); return l.length<35||["i don't know","i dont know","idk","no idea","not sure","skip","pass","can't answer","no clue"].some(k=>l.includes(k)); };
