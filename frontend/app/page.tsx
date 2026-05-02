@@ -731,14 +731,14 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
               <span style={{ color:T.text3 }}>▾</span>
             </button>
             {dd && (
-              <div style={{ position:"absolute", right:0, top:44, width:180, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:14, zIndex:200, overflow:"hidden", maxWidth:"90vw" }} onClick={() => setDd(false)}>
+              <div style={{ position:"absolute", right:0, top:44, width:200, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:14, zIndex:200, overflow:"hidden", maxWidth:"90vw" }} onClick={e => e.stopPropagation()}>
                 <div style={{ padding:"12px 16px", borderBottom:`1px solid ${T.line}` }}>
-                  <div style={{ fontSize:13, fontWeight:700 }}>{auth.user.name}</div>
-                  <div style={{ fontSize:11, color:T.text3 }}>{auth.user.email}</div>
+                  <div style={{ fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{auth.user.name}</div>
+                  <div style={{ fontSize:11, color:T.text3, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{auth.user.email}</div>
                   <div style={{ fontSize:11, color:auth.isPro()?T.amber:T.text3, marginTop:3 }}>{auth.isPro()?"Pro Active":"Free Trial"}</div>
                 </div>
-                {!auth.isPro() && <button onClick={() => setShowPrem(true)} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", fontSize:13, color:T.amber, background:"none", cursor:"pointer", border:"none", fontFamily:"inherit" }}>Upgrade to Pro</button>}
-                <button onClick={auth.logout} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", fontSize:13, color:T.red, background:"none", cursor:"pointer", border:"none", fontFamily:"inherit" }}>Log Out</button>
+                {!auth.isPro() && <button onClick={() => { setShowPrem(true); setDd(false); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", fontSize:13, color:T.amber, background:"none", cursor:"pointer", border:"none", fontFamily:"inherit" }}>Upgrade to Pro</button>}
+                <button onClick={() => { auth.logout(); setDd(false); }} style={{ display:"block", width:"100%", textAlign:"left", padding:"10px 16px", fontSize:13, color:T.red, background:"none", cursor:"pointer", border:"none", fontFamily:"inherit" }}>Log Out</button>
               </div>
             )}
           </div>
