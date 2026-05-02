@@ -4,7 +4,11 @@
 
 **Live Demo:** https://career-architect-zbs9.vercel.app
 
-<!-- SCREENSHOT: drag and drop full homepage/landing screen here -->
+<img width="1919" height="946" alt="image" src="https://github.com/user-attachments/assets/63c291e2-c29a-491d-955e-0bb1aea95b55" />
+
+
+<img width="1919" height="964" alt="image" src="https://github.com/user-attachments/assets/80116676-cfa3-4295-8805-42786777e32d" />
+
 
 ---
 
@@ -30,56 +34,70 @@ To see Pro features, use UTR code `991920` in the payment flow.
 ### 1. 🏢 Company Blueprint Engine
 Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Google, etc.). Checks CGPA and backlog eligibility against real company cutoffs. Free tier.
 
-<!-- SCREENSHOT: drag and drop blueprint tab with eligibility result and action plan here -->
+<img width="1913" height="943" alt="image" src="https://github.com/user-attachments/assets/0e42a02a-3457-4096-8c2b-2b577f021c81" />
+
 
 ---
 
 ### 2. 🎓 Academic Optimizer
 Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-exams. Generates a 12-week hybrid study + DSA timeline. Free tier.
 
-<!-- SCREENSHOT: drag and drop academic tab with timeline here -->
+<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/bd4aae3c-8bbb-4c57-8a21-17443ceb526f" />
+
 
 ---
 
 ### 3. 📄 ATS Resume & GitHub Analyser
 Reads actual PDF text and live GitHub profile data via the GitHub API. Returns an ATS score, keyword gap analysis, strengths, weaknesses, and 3 AI-generated interview questions based on real projects. Free tier.
 
-<!-- SCREENSHOT: drag and drop resume tab with ATS score ring and GitHub data here -->
+<img width="1916" height="936" alt="image" src="https://github.com/user-attachments/assets/28afba16-694c-46c5-a647-fd7e1971e389" />
+
 
 ---
 
 ### 4. ⏱ OA Round Simulator
 Timed coding environment (90-minute countdown) with 8 DSA problems. Supports JavaScript execution, test case running, and AI Big-O complexity analysis. Free tier.
 
-<!-- SCREENSHOT: drag and drop OA tab with code editor and timer here -->
+<img width="1919" height="941" alt="image" src="https://github.com/user-attachments/assets/bdb3341a-e2ab-48ae-ae1e-e8bc96daca52" />
+
 
 ---
 
 ### 5. 🧠 Aptitude Training Centre
 50-question bank across Quant, Logic, and Verbal. Timed 30-second per question. Tracks score history in localStorage. Free tier.
 
-<!-- SCREENSHOT: drag and drop aptitude quiz in progress here -->
+<img width="1912" height="947" alt="image" src="https://github.com/user-attachments/assets/7795f69c-495e-43ce-9a77-1ad48fd6186d" />
+
+<img width="1919" height="929" alt="image" src="https://github.com/user-attachments/assets/16f38621-326a-4c4f-b0e9-f3a7d51ec8cb" />
+
+
 
 ---
 
 ### 6. 🎥 Live AI Mock Interview
 Real-time video mock interview with 3 interviewer personas (friendly HR, strict FAANG, behavioural HR). Speech-to-text input, text-to-speech AI responses, 6-question dynamic flow, and a full performance report with scores across communication, technical, and confidence. Pro tier.
 
-<!-- SCREENSHOT: drag and drop interview tab with video panels and conversation here -->
+<img width="1919" height="959" alt="image" src="https://github.com/user-attachments/assets/39f004e1-1178-49cf-93a8-7ce1971bcffd" />
+
+<img width="1917" height="940" alt="image" src="https://github.com/user-attachments/assets/fbc9df36-ff37-4e4f-bc94-3c1150306e1f" />
+
+
 
 ---
 
 ### 7. 🗺 System Design Whiteboard
 Drag-and-drop architecture builder with 10 components (Client, Load Balancer, Cache, Database, etc.). Click two nodes to connect them. Click a connection line to remove it. AI critique gives score, strengths, issues, and suggestions. Pro tier.
 
-<!-- SCREENSHOT: drag and drop system design tab with nodes and AI critique here -->
+<img width="1919" height="947" alt="image" src="https://github.com/user-attachments/assets/8e5d8422-2e76-4d89-a3be-4283c89cc6cd" />
+
 
 ---
 
 ### 8. 📋 Practice Sheets
 DSA cheat sheet, interview patterns (STAR, coding flow, system design framework), aptitude formulae, and HR guide. Pro tier.
 
-<!-- SCREENSHOT: drag and drop practice sheet tab here -->
+<img width="1915" height="948" alt="image" src="https://github.com/user-attachments/assets/14bb7b8f-bd70-417e-b3a0-497ce8c81f9f" />
+
 
 ---
 
@@ -92,7 +110,11 @@ DSA cheat sheet, interview patterns (STAR, coding flow, system design framework)
 
 ### Pro Tier Upgrade Flow
 
-<!-- SCREENSHOT: drag and drop pro upgrade modal with QR code here -->
+<img width="1849" height="939" alt="image" src="https://github.com/user-attachments/assets/83432ab9-43df-49dc-acb9-0b836c6f8c00" />
+
+<img width="1919" height="933" alt="image" src="https://github.com/user-attachments/assets/28e5aa2c-3232-49e0-ad72-4872879b24dd" />
+
+
 
 - Select plan (Monthly ₹199 / Quarterly ₹499 / Yearly ₹999)
 - Scan QR code → enter UTR number `991920` → verified instantly
