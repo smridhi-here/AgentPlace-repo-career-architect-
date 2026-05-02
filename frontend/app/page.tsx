@@ -9,6 +9,7 @@ import { useState, useEffect, useRef } from "react";
 // ─── API (SECURE PROXY VIA PYTHON AI-ENGINE) ──────────────────────────────────
 async function callAI(msgs, sys, tok = 1200) {
   const AI_URL = `${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/v1/chat`;
+  const HEALTH_URL = `${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/health`;
   const payload = {
     messages: msgs,
     system: sys || "You are a helpful career assistant.",
@@ -26,34 +27,54 @@ async function callAI(msgs, sys, tok = 1200) {
     return r.json();
   };
 
+  const waitUntilAwake = async () => {
+    for (let i = 0; i < 15; i++) {
+      try {
+        const r = await fetch(HEALTH_URL);
+        if (r.ok) return true;
+      } catch {}
+      await new Promise(res => setTimeout(res, 6000));
+    }
+    return false;
+  };
+
+  // Try once immediately
   try {
-    // First attempt
     const d = await attemptFetch();
+    // Only show demo banner if backend explicitly flagged demo AND returned fallback
     if (d._demo === true) {
       window.dispatchEvent(new Event("demo-hit"));
+    } else {
+      window.dispatchEvent(new Event("demo-clear"));
     }
     return (d.content || []).map(c => c.text || "").join("");
   } catch (err) {
-    if (err.message === "SERVICE_DOWN" || err.message?.includes("404")) {
-      throw err;
+    if (err.message === "SERVICE_DOWN") throw err;
+
+    // Service is sleeping — wake it up, then retry up to 4 more times
+    console.warn("AI call failed, waking Render service...", err.message);
+    window.dispatchEvent(new Event("demo-clear")); // don't show demo banner while waking
+
+    const awake = await waitUntilAwake();
+    if (!awake) {
+      // Still not awake after 90 seconds — throw, don't show fake data
+      throw new Error("AI service is starting up. Please wait 30 seconds and try again.");
     }
-    console.error("AI first attempt failed, retrying in 8s...", err);
-    await new Promise(res => setTimeout(res, 8000));
-    try {
-      const d = await attemptFetch();
-      // Retry succeeded — clear demo mode
-      if (d._demo === true) {
-        window.dispatchEvent(new Event("demo-hit"));
-      } else {
-        window.dispatchEvent(new Event("demo-clear"));
+
+    // Service is awake now — retry up to 3 times
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const d = await attemptFetch();
+        if (d._demo === true) {
+          window.dispatchEvent(new Event("demo-hit"));
+        } else {
+          window.dispatchEvent(new Event("demo-clear"));
+        }
+        return (d.content || []).map(c => c.text || "").join("");
+      } catch (retryErr) {
+        if (attempt === 2) throw retryErr;
+        await new Promise(res => setTimeout(res, 4000));
       }
-      return (d.content || []).map(c => c.text || "").join("");
-    } catch (retryErr) {
-      console.error("AI retry also failed:", retryErr);
-      if (!retryErr.message?.includes("SERVICE_DOWN") && !retryErr.message?.includes("404")) {
-        window.dispatchEvent(new Event("demo-hit"));
-      }
-      throw retryErr;
     }
   }
 }
@@ -587,21 +608,40 @@ export default function App() {
   useEffect(() => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
     const aiUrl = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
-    fetch(`${backendUrl}/actuator/health`).catch(() => {});
-    // Wake Render AI engine — retries every 10s until alive
-    const wakeAI = async () => {
-      for(let i=0; i<6; i++) {
+
+    // Wake both services immediately on app load
+    const wakeServices = async () => {
+      // Wake backend (Java Spring)
+      for (let i = 0; i < 10; i++) {
         try {
-          const r = await fetch(`${aiUrl}/health`);
-          if(r.ok) { console.log("AI engine awake"); return; }
+          const r = await fetch(`${backendUrl}/actuator/health`);
+          if (r.ok) { console.log("Backend awake"); break; }
         } catch {}
-        await new Promise(res => setTimeout(res, 10000));
+        await new Promise(res => setTimeout(res, 8000));
       }
     };
+
+    const wakeAI = async () => {
+      // Wake AI engine (Python FastAPI on Render)
+      for (let i = 0; i < 10; i++) {
+        try {
+          const r = await fetch(`${aiUrl}/health`);
+          if (r.ok) { console.log("AI engine awake"); return; }
+        } catch {}
+        await new Promise(res => setTimeout(res, 8000));
+      }
+    };
+
+    wakeServices();
     wakeAI();
+
+    // Ping every 4 minutes — Render sleeps after ~15min inactivity
+    // 4min interval ensures it NEVER sleeps while user is on the app
     const keepAlive = setInterval(() => {
       fetch(`${aiUrl}/health`).catch(() => {});
-    }, 9 * 60 * 1000);
+      fetch(`${backendUrl}/actuator/health`).catch(() => {});
+    }, 4 * 60 * 1000);
+
     return () => clearInterval(keepAlive);
   }, []);
   const [tab, setTab] = useState(0);

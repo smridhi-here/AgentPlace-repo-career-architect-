@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+﻿import asyncio
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -124,6 +125,10 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/ping")
+async def ping():
+    return {"pong": True}
 @app.post("/v1/chat")
 async def chat_with_ai(request: AIRequest):
     api_key = os.getenv("OPENROUTER_API_KEY")
@@ -157,9 +162,28 @@ async def chat_with_ai(request: AIRequest):
             )
             
 
-            if response.status_code in (429, 503):
-                demo_text = _get_demo_response(messages_for_api)
-                return {"content": [{"text": demo_text}], "_demo": True}
+            if response.status_code == 429:
+                # Rate limited — wait and retry once
+                await asyncio.sleep(8)
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://agentplace.app",
+                    },
+                    json={
+                        "model": "nvidia/nemotron-nano-9b-v2:free",
+                        "messages": messages_for_api,
+                        "max_tokens": request.max_tokens,
+                    },
+                    timeout=45.0
+                )
+                if not response.ok:
+                    raise HTTPException(status_code=503, detail="AI rate limited. Please wait 10 seconds and try again.")
+
+            if response.status_code == 503:
+                raise HTTPException(status_code=503, detail="AI service temporarily unavailable. Please try again in 10 seconds.")
 
             if response.status_code != 200:
                 raise HTTPException(status_code=response.status_code, detail=response.text)
