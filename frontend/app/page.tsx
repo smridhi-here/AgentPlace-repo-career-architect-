@@ -725,9 +725,9 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:10 }}>
           <TimerBadge auth={auth} onUpgrade={() => setShowPrem(true)} />
           <div style={{ position:"relative" }}>
-            <button onClick={() => setDd(o => !o)} style={{ display:"flex", alignItems:"center", gap:8, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:9, padding:"6px 10px", cursor:"pointer", fontFamily:"inherit", color:T.text, fontSize:12 }}>
+          <button onClick={(e) => { e.stopPropagation(); setDd(o => !o); }} style={{ display:"flex", alignItems:"center", gap:8, background:T.surf2, border:`1px solid ${T.line2}`, borderRadius:9, padding:"6px 10px", cursor:"pointer", fontFamily:"inherit", color:T.text, fontSize:12 }}>
               <div style={{ width:24, height:24, borderRadius:"50%", background:grad, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:"#fff" }}>{auth.user.name?.[0]?.toUpperCase()}</div>
-              <span className="nav-user-name">{auth.user.name}</span>
+              <span className="nav-user-name" style={{ maxWidth:80, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", display:"inline-block", verticalAlign:"middle" }}>{auth.user.name}</span>
               <span style={{ color:T.text3 }}>▾</span>
             </button>
             {dd && (
