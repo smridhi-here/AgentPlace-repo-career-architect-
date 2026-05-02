@@ -648,9 +648,17 @@ export default function App() {
   const [dd, setDd] = useState(false);
   useEffect(() => {
     if (!dd) return;
-    const close = () => setDd(false);
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
+    const close = (e) => {
+      setDd(false);
+    };
+    // Delay adding the listener so the button click doesn't immediately close it
+    const timer = setTimeout(() => {
+      document.addEventListener("click", close);
+    }, 100);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("click", close);
+    };
   }, [dd]);
   const [comp, setComp] = useState(null);
   const cd = comp ? COS[comp] : null;
