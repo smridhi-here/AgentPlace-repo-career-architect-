@@ -716,7 +716,7 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
 `}</style>
       {showPrem && <PremiumModal auth={auth} onClose={() => setShowPrem(false)} />}
 
-      <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100, overflow:"hidden", maxWidth:"100vw" }}>
+      <nav style={{ height:54, background:T.surf, borderBottom:`1px solid ${T.line}`, display:"flex", alignItems:"center", padding:"0 16px", gap:12, flexShrink:0, position:"sticky", top:0, zIndex:100, maxWidth:"100vw" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <div style={{ width:30, height:30, borderRadius:9, background:grad, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:900, fontSize:14, color:"#fff" }}>A</div>
           <span style={{ fontWeight:800, fontSize:15, background:grad, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>AgentPlace</span>
@@ -1663,8 +1663,11 @@ function InterviewTab({ auth }) {
   const triggerEnd = () => { if (doneRef.current) return; clearInterval(ivTimer.current); doneRef.current=true; setDone(true); pushMsg("ai","That wraps up the interview! Generating your personalised report now.",null); speak("Thank you. Generating your report."); genReport(); };
   const enableCam = () => {
     setCamErr("");
-    if (!navigator.mediaDevices?.getUserMedia) { setCamErr("Camera unavailable — open via localhost, not file://."); return; }
-    navigator.mediaDevices.getUserMedia({ video:true, audio:true }).then(s => { camRef.current=s; setCam(s); if (vLob.current){vLob.current.srcObject=s;vLob.current.style.display="block";} }).catch(e => {
+    navigator.mediaDevices.getUserMedia({ video:true, audio:true }).then(s => {
+      camRef.current=s; setCam(s);
+      if (vLob.current){vLob.current.srcObject=s;vLob.current.style.display="block";}
+      if (window.speechSynthesis) { window.speechSynthesis.getVoices(); const p=new SpeechSynthesisUtterance(" "); p.volume=0; p.rate=10; window.speechSynthesis.speak(p); }
+    }).catch(e => {
       if (e.name==="NotAllowedError") setCamErr("Permission denied. Click lock in address bar, allow Camera & Mic, then reload.");
       else if (e.name==="NotReadableError") setCamErr("Camera busy — close Zoom/Teams/Meet and retry.");
       else setCamErr(e.name+": "+e.message);
