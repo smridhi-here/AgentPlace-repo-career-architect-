@@ -459,7 +459,7 @@ function PremiumModal({ auth, onClose }) {
           </div>
           <button onClick={onClose} style={{ background:T.surf2, border:"none", color:T.text2, cursor:"pointer", borderRadius:8, width:32, height:32, fontSize:18, fontFamily:"inherit" }}>x</button>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:18 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:18 }}className="grid-2col">
           {Object.entries(plans).map(([k, p]) => (
             <button key={k} onClick={() => setPlan(k)} style={{ background:plan===k?"rgba(0,229,204,.12)":T.surf2, border:`2px solid ${plan===k?T.cyan:T.line2}`, borderRadius:12, padding:"14px 8px", cursor:"pointer", textAlign:"center", fontFamily:"inherit" }}>
               {p.badge && <div style={{ fontSize:10, background:T.amber, color:"#000", borderRadius:8, padding:"2px 7px", fontWeight:700, marginBottom:4 }}>{p.badge}</div>}
@@ -599,6 +599,10 @@ export default function App() {
       }
     };
     wakeAI();
+    const keepAlive = setInterval(() => {
+      fetch(`${aiUrl}/health`).catch(() => {});
+    }, 9 * 60 * 1000);
+    return () => clearInterval(keepAlive);
   }, []);
   const [tab, setTab] = useState(0);
   const [dd, setDd] = useState(false);
@@ -656,6 +660,7 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
   .mobile-bottom-bar{display:flex!important}
   .nav-user-name{display:none!important}
   .nav-timer-label{display:none!important}
+  .nav-cd-badge{display:none!important}
 }
 @media(min-width:641px){
   .mobile-bottom-bar{display:none!important}
@@ -676,7 +681,7 @@ input,select,textarea{-webkit-appearance:none;-webkit-tap-highlight-color:transp
             {Object.entries(COS).map(([k,c]) => <option key={k} value={k}>{c.em} {c.name}</option>)}
           </select>
         </div>
-        {cd && <div style={{ fontSize:11, background:"rgba(0,229,204,.1)", border:"1px solid rgba(0,229,204,.3)", borderRadius:8, padding:"4px 10px", color:T.cyan, fontWeight:700 }}>{cd.em} {cd.name} — {cd.tier}</div>}
+        {cd && <div className="nav-cd-badge" style={{ fontSize:11, background:"rgba(0,229,204,.1)", border:"1px solid rgba(0,229,204,.3)", borderRadius:8, padding:"4px 10px", color:T.cyan, fontWeight:700 }}>{cd.em} {cd.name} — {cd.tier}</div>}
         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:10 }}>
           <TimerBadge auth={auth} onUpgrade={() => setShowPrem(true)} />
           <div style={{ position:"relative" }}>
@@ -1553,20 +1558,22 @@ function InterviewTab({ auth }) {
   const speak = raw => {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    let clean = raw.trim();
-    const ni = clean.toUpperCase().indexOf("NEXT:");
-    if (ni !== -1) clean = clean.slice(ni+5);
-    clean = clean.replace(/END_INTERVIEW/gi,"").split("\n").join(" ").trim().slice(0,420);
-    if (!clean) return;
-    const ut = new SpeechSynthesisUtterance(clean);
-    ut.rate = persona==="strict"?.87:.93; ut.pitch = persona==="strict"?.82:1.05;
-    const go = () => {
-      const vs = window.speechSynthesis.getVoices();
-      const pick = vs.find(v => v.lang.startsWith("en")&&(v.name.includes("Google")||v.name.includes("Samantha")||v.name.includes("Alex"))) || vs.find(v => v.lang.startsWith("en"));
-      if (pick) ut.voice = pick;
-      setAiTalk(true); ut.onend=ut.onerror=()=>setAiTalk(false); window.speechSynthesis.speak(ut);
-    };
-    window.speechSynthesis.getVoices().length ? go() : window.speechSynthesis.addEventListener("voiceschanged", go, { once:true });
+    setTimeout(() => {
+      let clean = raw.trim();
+      const ni = clean.toUpperCase().indexOf("NEXT:");
+      if (ni !== -1) clean = clean.slice(ni+5);
+      clean = clean.replace(/END_INTERVIEW/gi,"").split("\n").join(" ").trim().slice(0,420);
+      if (!clean) return;
+      const ut = new SpeechSynthesisUtterance(clean);
+      ut.rate = persona==="strict"?.87:.93; ut.pitch = persona==="strict"?.82:1.05;
+      const go = () => {
+        const vs = window.speechSynthesis.getVoices();
+        const pick = vs.find(v => v.lang.startsWith("en")&&(v.name.includes("Google")||v.name.includes("Samantha")||v.name.includes("Alex"))) || vs.find(v => v.lang.startsWith("en"));
+        if (pick) ut.voice = pick;
+        setAiTalk(true); ut.onend=ut.onerror=()=>setAiTalk(false); window.speechSynthesis.speak(ut);
+      };
+      window.speechSynthesis.getVoices().length ? go() : window.speechSynthesis.addEventListener("voiceschanged", go, { once:true });
+    }, 150);
   };
   const pushMsg = (role, text, fb) => { const m={r:role,t:text,fb:fb||null}; msgsRef.current=[...msgsRef.current,m]; setMsgs([...msgsRef.current]); };
   const isDK = t => { const l=t.toLowerCase().trim(); return l.length<35||["i don't know","i dont know","idk","no idea","not sure","skip","pass","can't answer","no clue"].some(k=>l.includes(k)); };
@@ -1854,7 +1861,7 @@ function SDTab({ auth }) {
         <div style={{ display:"flex", flexWrap:"wrap", gap:7, background:T.surf, border:`1px solid ${T.line}`, borderRadius:13, padding:11, marginBottom:14 }}>
           {COMPS.map(c => <button key={c.id} onClick={() => add(c)} style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 12px", borderRadius:8, fontSize:12, fontWeight:600, background:T.surf2, border:`1px solid ${T.line2}`, color:T.text2, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }} onMouseEnter={e=>{e.currentTarget.style.borderColor=T.cyan;e.currentTarget.style.color=T.cyan;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=T.line2;e.currentTarget.style.color=T.text2;}}>{c.i} {c.l}</button>)}
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:14 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:14 }}className="grid-2col">
           <div>
             <div ref={cvRef} tabIndex={0} onMouseMove={mm} onMouseUp={() => setDrag(null)} onKeyDown={e => e.key==="Escape"&&setLinking(null)}
               style={{ position:"relative", height:380, background:T.bg, borderRadius:16, border:`1px solid ${T.line}`, overflow:"hidden", cursor:drag?"grabbing":"default" }}>

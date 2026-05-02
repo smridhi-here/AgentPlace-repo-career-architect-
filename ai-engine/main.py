@@ -33,6 +33,55 @@ def _get_demo_response(contents: list) -> str:
             last = (c.get("content") or "").lower()
             break
 
+    # Count assistant messages to track question number
+    q_count = sum(1 for c in contents if c.get("role") == "assistant")
+
+    # Detect interview context from system prompt or message content
+    system_content = ""
+    for c in contents:
+        if c.get("role") == "system":
+            system_content = (c.get("content") or "").lower()
+            break
+
+    is_interview = (
+        "interviewer" in system_content or
+        "priya" in system_content or
+        "rahul" in system_content or
+        "neha" in system_content or
+        "feedback:" in last or
+        "next:" in last or
+        "greet" in last or
+        "starting" in last or
+        "interview is starting" in last
+    )
+
+    INTERVIEW_QS = [
+        "Tell me about yourself and your most impactful project.",
+        "Describe the hardest bug you ever debugged — what was your process?",
+        "How do you approach learning a new technology under deadline pressure?",
+        "Tell me about a time you conflicted with a teammate and how you resolved it.",
+        "Where do you see yourself in 3 years, and why does this role interest you?",
+        "What is your greatest technical strength and give me a concrete example?",
+    ]
+    INTERVIEW_FB = [
+        "Good start — try to add specific metrics or outcomes next time.",
+        "Nice structure. Mention what tools or technologies you used.",
+        "Good approach. Try to quantify how quickly you ramped up.",
+        "Well handled. Always close by stating what you personally learned.",
+        "Clear direction. Tie it more to the company mission.",
+        "Strong response. Back it up with a concrete project example.",
+    ]
+
+    if is_interview:
+        if q_count == 0:
+            return f"FEEDBACK: Welcome! Let's begin.\nNEXT: {INTERVIEW_QS[0]}"
+        if q_count >= 6:
+            return "FEEDBACK: Great session overall! You showed good communication skills.\nNEXT: END_INTERVIEW"
+        idx = min(q_count, len(INTERVIEW_QS) - 1)
+        fb_idx = max(0, idx - 1)
+        fb = INTERVIEW_FB[fb_idx] if last and len(last) > 10 else "Good effort — keep going."
+        return f"FEEDBACK: {fb}\nNEXT: {INTERVIEW_QS[idx]}"
+
     if "eligible" in last and "actionplan" in last:
         backlog_match = re.search(r'backlogs?[^\d]*(\d+)', last)
         cgpa_match = re.search(r'cgpa\s*=\s*([\d.]+)', last)
@@ -55,10 +104,8 @@ def _get_demo_response(contents: list) -> str:
     if "system design" in last or "scalability" in last or "components" in last:
         return '{"score":7,"strengths":["Good separation of concerns"],"issues":["No data replication"],"suggestions":["Add DB read replicas"],"scalability":"Medium-High","verdict":"Solid architecture for mid-scale."}'
 
-    if "feedback" in last or "interview" in last or "question" in last or "answer" in last:
-        return "FEEDBACK: Good answer - you structured your response well.\nNEXT: Tell me about a time you had to learn something new quickly under pressure."
-
-    return '{"result":"Analysis complete.","status":"success","message":"Demo response - AI quota temporarily reached."}'
+    # Safe default — never return raw JSON for unknown context
+    return "FEEDBACK: Good effort on that answer.\nNEXT: Can you walk me through your most challenging technical project?"
 
 
 class AIRequest(BaseModel):
@@ -106,7 +153,7 @@ async def chat_with_ai(request: AIRequest):
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
-                timeout=60.0
+                timeout=45.0
             )
             
 
