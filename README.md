@@ -200,3 +200,15 @@ newagent/
 - **Demo mode** — when AI is unavailable, realistic sample data is shown with a visible banner rather than errors
 - **Auto-wake** — app pings the Render AI engine on startup to minimise cold-start delay
 - **CGPA/backlog validation** — eligibility enforced client-side against real company cutoffs, AI score overridden if ineligible
+
+## Keep-Alive Setup
+
+Both Render services are kept awake 24/7 using UptimeRobot (free).
+
+| Service | URL Monitored | Interval |
+|---|---|---|
+| Python AI Engine | https://career-architect-ai-h4ii.onrender.com/ping | 5 min |
+| Java Backend | https://career-architect-twlt.onrender.com/actuator/health | 5 min |
+
+UptimeRobot pings both every 5 minutes so Render free tier never spins down.
+The `/ping` endpoint in `main.py` accepts both GET and HEAD requests for compatibility.
