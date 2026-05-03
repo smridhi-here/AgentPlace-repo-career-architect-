@@ -1666,24 +1666,75 @@ function InterviewTab({ auth }) {
     navigator.mediaDevices.getUserMedia({ video:true, audio:true }).then(s => {
       camRef.current=s; setCam(s);
       if (vLob.current){vLob.current.srcObject=s;vLob.current.style.display="block";}
-      if (window.speechSynthesis) { window.speechSynthesis.getVoices(); const p=new SpeechSynthesisUtterance(" "); p.volume=0; p.rate=10; window.speechSynthesis.speak(p); }
+      // Pre-warm AI engine so first question isn't demo
+      fetch(`${process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000"}/health`).catch(() => {});
     }).catch(e => {
       if (e.name==="NotAllowedError") setCamErr("Permission denied. Click lock in address bar, allow Camera & Mic, then reload.");
       else if (e.name==="NotReadableError") setCamErr("Camera busy — close Zoom/Teams/Meet and retry.");
       else setCamErr(e.name+": "+e.message);
     });
   };
-  const startCountdown = () => { if (!camRef.current){alert("Enable camera first!");return;} setCd(3); setPhase("countdown"); };
+  const startCountdown = () => {
+    if (!camRef.current){alert("Enable camera first!");return;}
+    // iOS UNLOCK: Must call speak() synchronously inside a user gesture
+    if (window.speechSynthesis) {
+      const unlock = new SpeechSynthesisUtterance(" ");
+      unlock.volume = 0;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(unlock);
+    }
+    setCd(3); setPhase("countdown");
+  };
   useEffect(() => {
-    if (phase!=="countdown") return;
-    if (cd===0){setPhase("active");doStart();return;}
-    const t=setTimeout(()=>setCd(c=>c-1),1000);
-    return ()=>clearTimeout(t);
+    if (phase !== "countdown") return;
+    if (cd === 0) {
+      // Speak "Go!" before starting
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance("Go!");
+        u.rate = 1.1; u.pitch = 1.2;
+        const vs = window.speechSynthesis.getVoices();
+        const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
+        if (pick) u.voice = pick;
+        window.speechSynthesis.speak(u);
+      }
+      setPhase("active");
+      doStart();
+      return;
+    }
+    // Speak the countdown number (3, 2, 1)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(cd));
+      u.rate = 1; u.pitch = 1;
+      const vs = window.speechSynthesis.getVoices();
+      const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
+      if (pick) u.voice = pick;
+      window.speechSynthesis.speak(u);
+    }
+    const t = setTimeout(() => setCd(c => c - 1), 1000);
+    return () => clearTimeout(t);
   }, [cd, phase]);
   const doStart = async () => {
     msgsRef.current=[]; apiRef.current=[]; doneRef.current=false;
     demoModeRef.current=false; demoQIdxRef.current=0;
     setMsgs([]); setQd(0); setDone(false); setAnswer(""); setReport(null); setThinking(true);
+  
+    // Wait for AI to be ready before starting (avoids cold-start demo mode)
+    const aiUrl = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
+    let aiReady = false;
+    for (let i = 0; i < 8; i++) {
+      try {
+        const r = await fetch(`${aiUrl}/health`);
+        if (r.ok) { aiReady = true; break; }
+      } catch {}
+      await new Promise(res => setTimeout(res, 3000));
+    }
+    if (!aiReady) {
+      demoModeRef.current = true;
+      window.dispatchEvent(new Event("demo-hit"));
+    }
+    // Now proceed with first question...
     const seed = { role:"user", content:"The interview is starting. Greet me in one sentence then ask your first question.\nFEEDBACK: [greeting]\nNEXT: [first question]" };
     apiRef.current = [seed];
     try {
