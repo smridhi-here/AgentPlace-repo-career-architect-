@@ -1647,10 +1647,12 @@ function InterviewTab({ auth }) {
   const startCountdown = () => {
     if (!camRef.current){alert("Enable camera first!");return;}
     if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
       const unlock = new SpeechSynthesisUtterance(" ");
       unlock.volume = 0;
+      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(unlock);
+      // Pre-load voices so cd=3 can speak immediately
+      window.speechSynthesis.getVoices();
     }
     setCd(3); setPhase("countdown");
   };
