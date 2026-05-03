@@ -1697,7 +1697,6 @@ function InterviewTab({ auth }) {
     if (cd === 0) {
       setTimeout(() => {
         if (window.speechSynthesis) {
-          window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance("Go!");
           u.rate = 1.1; u.pitch = 1.2;
           const vs = window.speechSynthesis.getVoices();
@@ -1724,6 +1723,7 @@ function InterviewTab({ auth }) {
     return () => clearTimeout(t);
   }, [cd, phase]);
   const doStart = async () => {
+    await new Promise(res => setTimeout(res, 1200)); // let "Go!" finish
     msgsRef.current=[]; apiRef.current=[]; doneRef.current=false;
     demoModeRef.current=false; demoQIdxRef.current=0;
     setMsgs([]); setQd(0); setDone(false); setAnswer(""); setReport(null); setThinking(true);
