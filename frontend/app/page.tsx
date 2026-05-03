@@ -1591,11 +1591,11 @@ function InterviewTab({ auth }) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     setTimeout(() => {
+      if (doneRef.current) return;
       let clean = raw.trim();
       const fi = clean.toUpperCase().indexOf("FEEDBACK:");
       const ni = clean.toUpperCase().indexOf("NEXT:");
       if (fi !== -1 && ni !== -1) {
-        // Speak feedback + question together
         const fb = clean.slice(fi+9, ni).trim();
         const nxt = clean.slice(ni+5).replace(/END_INTERVIEW/gi,"").trim();
         clean = (fb ? fb + ". " : "") + nxt;
@@ -1613,27 +1613,11 @@ function InterviewTab({ auth }) {
         if (pick) ut.voice = pick;
         ut.onstart = () => setAiTalk(true);
         ut.onend = () => setAiTalk(false);
-        ut.onerror = (e) => {
-          setAiTalk(false);
-          // If interrupted, retry once after 300ms
-          if (e.error === "interrupted" || e.error === "canceled") {
-            setTimeout(() => {
-              const ut2 = new SpeechSynthesisUtterance(clean);
-              ut2.rate = ut.rate; ut2.pitch = ut.pitch; ut2.voice = ut.voice;
-              ut2.onstart = () => setAiTalk(true);
-              ut2.onend = () => setAiTalk(false);
-              ut2.onerror = () => setAiTalk(false);
-              window.speechSynthesis.speak(ut2);
-            }, 300);
-          }
-        };
+        ut.onerror = () => setAiTalk(false);
         window.speechSynthesis.speak(ut);
       };
-      if (window.speechSynthesis.getVoices().length) {
-        go();
-      } else {
-        window.speechSynthesis.addEventListener("voiceschanged", go, { once:true });
-      }
+      if (window.speechSynthesis.getVoices().length) { go(); }
+      else { window.speechSynthesis.addEventListener("voiceschanged", go, { once:true }); }
     }, 400);
   };
   const pushMsg = (role, text, fb) => { const m={r:role,t:text,fb:fb||null}; msgsRef.current=[...msgsRef.current,m]; setMsgs([...msgsRef.current]); };
@@ -1646,7 +1630,7 @@ function InterviewTab({ auth }) {
       return n;
     }), 1000);
   };
-  const triggerEnd = () => { if (doneRef.current) return; clearInterval(ivTimer.current); doneRef.current=true; setDone(true); pushMsg("ai","That wraps up the interview! Generating your personalised report now.",null); speak("Thank you. Generating your report."); genReport(); };
+  const triggerEnd = () => { if (doneRef.current) return; clearInterval(ivTimer.current); doneRef.current=true; setDone(true); window.speechSynthesis?.cancel(); pushMsg("ai","That wraps up the interview! Generating your personalised report now.",null); genReport(); };
   const enableCam = () => {
     setCamErr("");
     navigator.mediaDevices.getUserMedia({ video:true, audio:true }).then(s => {
