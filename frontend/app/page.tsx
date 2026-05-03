@@ -1678,30 +1678,6 @@ function InterviewTab({ auth }) {
     const t = setTimeout(() => setCd(c => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cd, phase]);
-          u.rate = 1.1; u.pitch = 1.2;
-          const vs = window.speechSynthesis.getVoices();
-          const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
-          if (pick) u.voice = pick;
-          window.speechSynthesis.speak(u);
-        }
-      }, 150);
-      setPhase("active");
-      doStart();
-      return;
-    }
-    const t = setTimeout(() => {
-      if (window.speechSynthesis) {
-        const u = new SpeechSynthesisUtterance(String(cd));
-        u.rate = 1; u.pitch = 1;
-        const vs = window.speechSynthesis.getVoices();
-        const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
-        if (pick) u.voice = pick;
-        window.speechSynthesis.speak(u);
-      }
-      setCd(c => c - 1);
-    }, cd === 3 ? 300 : 1000);
-    return () => clearTimeout(t);
-  }, [cd, phase]);
   const doStart = async () => {
     msgsRef.current=[]; apiRef.current=[]; doneRef.current=false;
     demoModeRef.current=false; demoQIdxRef.current=0;
