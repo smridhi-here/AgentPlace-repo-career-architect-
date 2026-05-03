@@ -1614,8 +1614,16 @@ function InterviewTab({ auth }) {
     window.speechSynthesis.cancel();
     setTimeout(() => {
       let clean = raw.trim();
+      const fi = clean.toUpperCase().indexOf("FEEDBACK:");
       const ni = clean.toUpperCase().indexOf("NEXT:");
-      if (ni !== -1) clean = clean.slice(ni+5);
+      if (fi !== -1 && ni !== -1) {
+        // Speak feedback + question together
+        const fb = clean.slice(fi+9, ni).trim();
+        const nxt = clean.slice(ni+5).replace(/END_INTERVIEW/gi,"").trim();
+        clean = (fb ? fb + ". " : "") + nxt;
+      } else if (ni !== -1) {
+        clean = clean.slice(ni+5).replace(/END_INTERVIEW/gi,"").trim();
+      }
       clean = clean.replace(/END_INTERVIEW/gi,"").split("\n").join(" ").trim().slice(0,420);
       if (!clean) return;
       const go = () => {

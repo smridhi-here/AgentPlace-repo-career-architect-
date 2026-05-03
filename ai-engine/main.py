@@ -154,7 +154,7 @@ async def chat_with_ai(request: AIRequest):
                     "HTTP-Referer": "https://agentplace.app",
                 },
                 json={
-                    "model": "nvidia/nemotron-nano-9b-v2:free",
+                    "model": "mistralai/mistral-7b-instruct:free",
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
@@ -173,7 +173,7 @@ async def chat_with_ai(request: AIRequest):
                         "HTTP-Referer": "https://agentplace.app",
                     },
                     json={
-                        "model": "nvidia/nemotron-nano-9b-v2:free",
+                        "model": "mistralai/mistral-7b-instruct:free",
                         "messages": messages_for_api,
                         "max_tokens": request.max_tokens,
                     },
