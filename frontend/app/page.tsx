@@ -1661,7 +1661,6 @@ function InterviewTab({ auth }) {
     if (cd === 0) {
       setPhase("active");
       doStart();
-      // Speak "Go!" after phase change
       try {
         window.speechSynthesis?.cancel();
         const u = new SpeechSynthesisUtterance("Go!");
@@ -1670,7 +1669,6 @@ function InterviewTab({ auth }) {
       } catch {}
       return;
     }
-    // Speak the number immediately, then schedule next tick
     try {
       window.speechSynthesis?.cancel();
       const u = new SpeechSynthesisUtterance(String(cd));
