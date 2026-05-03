@@ -1723,7 +1723,7 @@ function InterviewTab({ auth }) {
     return () => clearTimeout(t);
   }, [cd, phase]);
   const doStart = async () => {
-    await new Promise(res => setTimeout(res, 1200)); // let "Go!" finish
+    await new Promise(res => setTimeout(res, 500)); // let "Go!" finish
     msgsRef.current=[]; apiRef.current=[]; doneRef.current=false;
     demoModeRef.current=false; demoQIdxRef.current=0;
     setMsgs([]); setQd(0); setDone(false); setAnswer(""); setReport(null); setThinking(true);
