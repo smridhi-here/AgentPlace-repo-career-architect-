@@ -154,7 +154,7 @@ async def chat_with_ai(request: AIRequest):
                     "HTTP-Referer": "https://agentplace.app",
                 },
                 json={
-                    "model": "mistralai/mistral-7b-instruct:free",
+                    "model": "openrouter/auto",
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
@@ -173,7 +173,7 @@ async def chat_with_ai(request: AIRequest):
                         "HTTP-Referer": "https://agentplace.app",
                     },
                     json={
-                        "model": "mistralai/mistral-7b-instruct:free",
+                        "model": "openrouter/auto",
                         "messages": messages_for_api,
                         "max_tokens": request.max_tokens,
                     },
@@ -204,7 +204,8 @@ async def chat_with_ai(request: AIRequest):
         except HTTPException:
             raise
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+            demo_text = _get_demo_response(messages_for_api)
+            return {"content": [{"text": demo_text}], "_demo": True}
 
 
 @app.post("/v1/github")
