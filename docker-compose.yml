@@ -15,6 +15,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
   backend:
     build:
       context: ./backend
@@ -31,6 +32,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
   ai-engine:
     build:
       context: ./ai-engine
@@ -38,28 +40,32 @@ services:
     container_name: career-architect-ai-engine
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       PYTHONPATH: /app
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:8080
-        - NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:8000
+        - NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:8000 # <--- Changed 8001 to 8000
     container_name: career-architect-frontend
     ports:
       - "3000:3000"
     init: true
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:8000
+      - NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:8000 # <--- Changed 8001 to 8000
     depends_on:
       backend:
         condition: service_started
       ai-engine:
         condition: service_started
+
 volumes:
   postgres_data:

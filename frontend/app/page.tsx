@@ -23,6 +23,10 @@ async function callAI(msgs, sys, tok = 1200) {
       body: JSON.stringify(payload),
     });
     if (r.status === 404) throw new Error("SERVICE_DOWN");
+    if (r.status === 500) {
+      const errText = await r.text();
+      throw new Error(`AI_500: ${errText}`);
+    }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.json();
   };
@@ -52,12 +56,15 @@ async function callAI(msgs, sys, tok = 1200) {
     if (err.message === "SERVICE_DOWN") throw err;
 
     // Service is sleeping — wake it up, then retry up to 4 more times
-    console.warn("AI call failed, waking Render service...", err.message);
-    window.dispatchEvent(new Event("demo-clear")); // don't show demo banner while waking
+    console.warn("AI call failed:", err.message);
+    // Don't try to wake if it's a 500 — service is up but erroring
+    if (err.message.startsWith("AI_500")) {
+      throw new Error("AI engine error: " + err.message);
+    }
+    window.dispatchEvent(new Event("demo-clear"));
 
     const awake = await waitUntilAwake();
     if (!awake) {
-      // Still not awake after 90 seconds — throw, don't show fake data
       throw new Error("AI service is starting up. Please wait 30 seconds and try again.");
     }
 
@@ -1703,6 +1710,8 @@ function InterviewTab({ auth }) {
       const {next}=parseResp(raw); const q=(next&&next.length>4)?next:raw.trim();
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
     } catch {
+      window.dispatchEvent(new Event("demo-hit"));
+      demoModeRef.current=true;
       demoQIdxRef.current=0;
       const q=DEMO_IVQ[0];
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
@@ -1742,6 +1751,8 @@ function InterviewTab({ auth }) {
         speak(`FEEDBACK: ${fb||""}\nNEXT: ${q}`);
       }
     } catch {
+      window.dispatchEvent(new Event("demo-hit"));
+      demoModeRef.current=true;
       if (qSoFar>=4){triggerEnd();return;}
       const fb=["Describe a specific project and its biggest technical challenge.","What data structures do you use most, and why?","Tell me about learning something new under pressure.","How would you design a simple URL shortener?","Difference between an array and a linked list?"];
       const fallback=fb[qSoFar%fb.length];
@@ -1764,7 +1775,7 @@ function InterviewTab({ auth }) {
     const transcript=pairs.map((p,i)=>`Question ${i+1}: ${p.q}\nCandidate: ${p.a}`).join("\n\n");
     const prompt=`Analyse this mock interview transcript. Based ONLY on what was actually said, give specific feedback. Return ONLY valid JSON:\n{"overallScore":6,"communication":6,"technical":5,"confidence":6,"keyMistakes":["specific weakness"],"strengths":["specific strength"],"improvements":["concrete tip"],"verdict":"3 sentences referencing actual answers"}\n\n${transcript}`;
     try { const raw=await callAI([{role:"user",content:prompt}],null,1200); const p=parseJSON(raw); setReport(p&&p.overallScore?p:defRpt(pairs)); }
-    catch { setReport(defRpt(pairs)); }
+    catch { window.dispatchEvent(new Event("demo-hit")); setReport(defRpt(pairs)); }
     setThinking(false);
   };
   const defRpt = pairs => ({ overallScore:6, communication:6, technical:5, confidence:6, keyMistakes:["Answers too brief — add more detail","Did not mention time/space complexity","Missing concrete examples"], strengths:["Attempted all questions","Willingness to engage"], improvements:["State what you DO know when unsure","End every technical answer with complexity analysis","Use STAR: Situation, Task, Action, Result"], verdict:`Candidate answered ${pairs.length} questions. Communication was adequate but technical depth needs improvement. Focus on adding specifics, metrics, and algorithm analysis to every answer.` });
