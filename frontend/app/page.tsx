@@ -1697,6 +1697,7 @@ function InterviewTab({ auth }) {
     if (cd === 0) {
       setTimeout(() => {
         if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance("Go!");
           u.rate = 1.1; u.pitch = 1.2;
           const vs = window.speechSynthesis.getVoices();
@@ -1860,7 +1861,7 @@ function InterviewTab({ auth }) {
               <div style={{ width:48, height:48, borderRadius:"50%", background:"linear-gradient(135deg,#1e40af,#7c3aed)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{p.em}</div>
               <div><div style={{ fontSize:14, fontWeight:700 }}>{p.name}</div><div style={{ fontSize:12, color:T.text3 }}>{p.title}</div><div style={{ fontSize:11, color:T.text3, marginTop:2 }}>6 questions · Dynamic follow-ups · Full report</div></div>
             </div>
-            <Btn ch={!cam?"Enable Camera First":"Start Interview — 3·2·1"} v={!cam?"outline":"primary"} full disabled={!cam} onClick={startCountdown} s={{ padding:"13px 0", opacity:!cam?0.4:1 }} />
+            <Btn ch={!cam?"Enable Camera First":"Start Interview "} v={!cam?"outline":"primary"} full disabled={!cam} onClick={startCountdown} s={{ padding:"13px 0", opacity:!cam?0.4:1 }} />
           </Card>
         </div>
       </div>
