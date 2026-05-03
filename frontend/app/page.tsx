@@ -1684,44 +1684,42 @@ function InterviewTab({ auth }) {
   };
   const startCountdown = () => {
     if (!camRef.current){alert("Enable camera first!");return;}
-    // iOS UNLOCK: Must call speak() synchronously inside a user gesture
     if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
       const unlock = new SpeechSynthesisUtterance(" ");
       unlock.volume = 0;
-      window.speechSynthesis.cancel();
       window.speechSynthesis.speak(unlock);
-      window.speechSynthesis.getVoices();
     }
     setCd(3); setPhase("countdown");
   };
   useEffect(() => {
     if (phase !== "countdown") return;
     if (cd === 0) {
-      // Speak "Go!" before starting
+      setTimeout(() => {
+        if (window.speechSynthesis) {
+          const u = new SpeechSynthesisUtterance("Go!");
+          u.rate = 1.1; u.pitch = 1.2;
+          const vs = window.speechSynthesis.getVoices();
+          const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
+          if (pick) u.voice = pick;
+          window.speechSynthesis.speak(u);
+        }
+      }, 150);
+      setPhase("active");
+      doStart();
+      return;
+    }
+    const t = setTimeout(() => {
       if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance("Go!");
-        u.rate = 1.1; u.pitch = 1.2;
+        const u = new SpeechSynthesisUtterance(String(cd));
+        u.rate = 1; u.pitch = 1;
         const vs = window.speechSynthesis.getVoices();
         const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
         if (pick) u.voice = pick;
         window.speechSynthesis.speak(u);
       }
-      setPhase("active");
-      doStart();
-      return;
-    }
-    // Speak the countdown number (3, 2, 1)
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(String(cd));
-      u.rate = 1; u.pitch = 1;
-      const vs = window.speechSynthesis.getVoices();
-      const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
-      if (pick) u.voice = pick;
-      window.speechSynthesis.speak(u);
-    }
-    const t = setTimeout(() => setCd(c => c - 1), 1000);
+      setCd(c => c - 1);
+    }, cd === 3 ? 300 : 1000);
     return () => clearTimeout(t);
   }, [cd, phase]);
   const doStart = async () => {
