@@ -1659,9 +1659,27 @@ function InterviewTab({ auth }) {
   useEffect(() => {
     if (phase !== "countdown") return;
     if (cd === 0) {
-      setTimeout(() => {
-        if (window.speechSynthesis) {
-          const u = new SpeechSynthesisUtterance("Go!");
+      setPhase("active");
+      doStart();
+      // Speak "Go!" after phase change
+      try {
+        window.speechSynthesis?.cancel();
+        const u = new SpeechSynthesisUtterance("Go!");
+        u.rate = 1.1; u.pitch = 1.2;
+        window.speechSynthesis?.speak(u);
+      } catch {}
+      return;
+    }
+    // Speak the number immediately, then schedule next tick
+    try {
+      window.speechSynthesis?.cancel();
+      const u = new SpeechSynthesisUtterance(String(cd));
+      u.rate = 1.0; u.pitch = 1.0;
+      window.speechSynthesis?.speak(u);
+    } catch {}
+    const t = setTimeout(() => setCd(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cd, phase]);
           u.rate = 1.1; u.pitch = 1.2;
           const vs = window.speechSynthesis.getVoices();
           const pick = vs.find(v => v.lang.startsWith("en")) || vs[0];
@@ -1692,19 +1710,10 @@ function InterviewTab({ auth }) {
     setMsgs([]); setQd(0); setDone(false); setAnswer(""); setReport(null); setThinking(true);
   
     // Wait for AI to be ready before starting (avoids cold-start demo mode)
-    const aiUrl = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000";
-    let aiReady = false;
-    for (let i = 0; i < 8; i++) {
-      try {
-        const r = await fetch(`${aiUrl}/health`);
-        if (r.ok) { aiReady = true; break; }
-      } catch {}
-      await new Promise(res => setTimeout(res, 3000));
-    }
-    if (!aiReady) {
-      demoModeRef.current = true;
-      window.dispatchEvent(new Event("demo-hit"));
-    }
+    // Don't pre-check health — just attempt the call directly.
+    // callAI already has its own wake-up retry logic.
+    // Demo mode is only set if callAI itself explicitly returns _demo:true from the backend.
+    demoModeRef.current = false;
     // Now proceed with first question...
     const seed = { role:"user", content:"The interview is starting. Greet me in one sentence then ask your first question.\nFEEDBACK: [greeting]\nNEXT: [first question]" };
     apiRef.current = [seed];
@@ -1720,7 +1729,7 @@ function InterviewTab({ auth }) {
       const {next}=parseResp(raw); const q=(next&&next.length>4)?next:raw.trim();
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
     } catch {
-      demoModeRef.current=true; demoQIdxRef.current=0;
+      demoQIdxRef.current=0;
       const q=DEMO_IVQ[0];
       pushMsg("ai",q,null); setQd(1); setLastQ(q); speak(q);
     }
