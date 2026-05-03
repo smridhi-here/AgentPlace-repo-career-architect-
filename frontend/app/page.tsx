@@ -1690,6 +1690,7 @@ function InterviewTab({ auth }) {
       unlock.volume = 0;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(unlock);
+      window.speechSynthesis.getVoices();
     }
     setCd(3); setPhase("countdown");
   };
@@ -1793,7 +1794,7 @@ function InterviewTab({ auth }) {
       else {
         const q=(next&&next.length>5&&!next.toUpperCase().includes("END_INTERVIEW"))?next:raw.trim();
         pushMsg("ai",q,(fb&&fb.length>5)?fb:null); setQd(qSoFar+1); setLastQ(q);
-        speak((fb&&fb.length>8&&fb.length<200)?fb+"  "+q:q);
+        speak(`FEEDBACK: ${fb||""}\nNEXT: ${q}`);
       }
     } catch {
       if (qSoFar>=4){triggerEnd();return;}
