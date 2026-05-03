@@ -1557,29 +1557,7 @@ function InterviewTab({ auth }) {
     window.addEventListener("demo-hit", handler);
     return () => window.removeEventListener("demo-hit", handler);
   }, []);
-  // 1. ADD THIS WATCHDOG EFFECT HERE
-  useEffect(() => {
-    // Logic: If interview is 'active', not yet 'done', and time hits 120s (2 mins)
-    if (phase === "active" && !done && ivSecs >= 120) {
-      
-      // Stop the microphone if it's recording
-      if (typeof stopMic === 'function') stopMic(); 
-      
-      // Trigger the existing end/report logic
-      triggerEnd(); 
-      
-      // Show a message so the user knows why it stopped
-      pushMsg("ai", "⚠️ Interview Session Timed Out: 2 minutes of inactivity detected. Generating your report...", null);
-      
-      // Optional: Audio alert
-      if ('speechSynthesis' in window) {
-        const ut = new SpeechSynthesisUtterance("Session timed out due to inactivity.");
-        window.speechSynthesis.speak(ut);
-      }
-    }
-  }, [ivSecs, phase, done]); // It re-checks every time the second-counter ticks
-
-  // ... rest of your existing functions (triggerEnd, reset, etc.)
+  
   
 
 
