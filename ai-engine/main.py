@@ -74,8 +74,12 @@ def _get_demo_response(contents: list) -> str:
     ]
 
     if is_interview:
+        is_dk = any(phrase in last for phrase in ["don't know","dont know","idk","no idea","not sure","skip","pass","nothing","blank"])
         if q_count == 0:
             return f"FEEDBACK: Welcome! Let's begin.\nNEXT: {INTERVIEW_QS[0]}"
+        if is_dk:
+            idx = min(q_count, len(INTERVIEW_QS)-1)
+            return f"FEEDBACK: That is okay, let us try a different question.\nNEXT: {INTERVIEW_QS[idx]}"
         if q_count >= 6:
             return "FEEDBACK: Great session overall! You showed good communication skills.\nNEXT: END_INTERVIEW"
         idx = min(q_count, len(INTERVIEW_QS) - 1)
