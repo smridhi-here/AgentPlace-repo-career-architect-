@@ -1581,7 +1581,7 @@ function InterviewTab({ auth }) {
   const p = P[persona];
 
   const getSys = () => {
-    const ctx = bg ? 
+    const ctx = bg ? ` Candidate background: ${bg}.` : "";
     const fmt = "\n\nCRITICAL: Ask ONE question at a time only. NEVER list multiple questions. ALWAYS respond in EXACTLY this two-line format and nothing else:\nFEEDBACK: [one sentence feedback]\nNEXT: [one single question]\n\nNever include multiple FEEDBACK/NEXT pairs. One exchange at a time only.\nAfter 6 questions total: NEXT: END_INTERVIEW";
     if (persona==="strict") return `You are Rahul Kapoor, FAANG SDE-3 interviewer.${ctx} Ask tough DSA, system design, CS fundamentals. Be direct and honest. 6 questions total, varied topics.${fmt}`;
     if (persona==="hr") return `You are Neha Gupta, HR behavioural interviewer.${ctx} Ask STAR-method questions about teamwork, conflict, failure, achievement. 6 questions total.${fmt}`;
