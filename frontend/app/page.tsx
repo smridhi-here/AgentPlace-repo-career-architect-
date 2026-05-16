@@ -1525,7 +1525,7 @@ function AptitudeTab({ auth }) {
 }
 const DEMO_IVQ = [
   "Tell me about yourself and your most impactful project.",
-  "Describe the hardest bug you ever debugged — what was your process?",
+  "Describe the hardest bug you ever debugged  what was your process?",
   "How do you approach picking up a new technology under deadline pressure?",
   "Tell me about a time you conflicted with a teammate and how you resolved it.",
   "Where do you see yourself in 3 years, and why does this role interest you?",
@@ -1581,11 +1581,11 @@ function InterviewTab({ auth }) {
   const p = P[persona];
 
   const getSys = () => {
-    const ctx = bg ? ` Candidate: ${bg}.` : "";
-    const fmt = "\n\nALWAYS respond in EXACTLY this two-line format:\nFEEDBACK: [honest feedback on their answer]\nNEXT: [your next question]\n\nWhen candidate says I don't know: give a hint, ask simpler version.\nAfter 6 questions total: NEXT: END_INTERVIEW";
+    const ctx = bg ? 
+    const fmt = "\n\nCRITICAL: Ask ONE question at a time only. NEVER list multiple questions. ALWAYS respond in EXACTLY this two-line format and nothing else:\nFEEDBACK: [one sentence feedback]\nNEXT: [one single question]\n\nNever include multiple FEEDBACK/NEXT pairs. One exchange at a time only.\nAfter 6 questions total: NEXT: END_INTERVIEW";
     if (persona==="strict") return `You are Rahul Kapoor, FAANG SDE-3 interviewer.${ctx} Ask tough DSA, system design, CS fundamentals. Be direct and honest. 6 questions total, varied topics.${fmt}`;
     if (persona==="hr") return `You are Neha Gupta, HR behavioural interviewer.${ctx} Ask STAR-method questions about teamwork, conflict, failure, achievement. 6 questions total.${fmt}`;
-    return `You are Priya Sharma, warm campus HR interviewer.${ctx} Ask intro, projects, strengths, goals, situational questions. Be warm but honest. 6 questions total.${fmt}`;
+    return `You are Priya Sharma, warm campus HR interviewer.${ctx} Always start by asking the candidate to introduce themselves. Then ask about projects, strengths, goals, situational questions. Be warm but honest. 6 questions total.${fmt}`;
   };
   const parseResp = raw => {
     const text=raw.trim(), upper=text.toUpperCase();
@@ -1696,7 +1696,7 @@ function InterviewTab({ auth }) {
     // Demo mode is only set if callAI itself explicitly returns _demo:true from the backend.
     demoModeRef.current = false;
     // Now proceed with first question...
-    const seed = { role:"user", content:"The interview is starting. Greet me in one sentence then ask your first question.\nFEEDBACK: [greeting]\nNEXT: [first question]" };
+    const seed = { role:"user", content:"The interview is starting. Greet me warmly in one sentence then ask me to introduce myself.\nFEEDBACK: [greeting]\nNEXT: Please introduce yourself - tell me your name, background, and what you are currently doing." };
     apiRef.current = [seed];
     try {
       const raw = await callAI([seed], getSys(), 500);
