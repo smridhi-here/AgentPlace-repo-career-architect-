@@ -6,8 +6,7 @@
 
 <img width="1919" height="946" alt="image" src="https://github.com/user-attachments/assets/63c291e2-c29a-491d-955e-0bb1aea95b55" />
 
-
-<img width="1919" height="964" alt="image" src="https://github.com/user-attachments/assets/80116676-cfa3-4295-8805-42786777e32d" />
+image.png
 
 
 ---
@@ -42,7 +41,7 @@ Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Go
 ### 2. 🎓 Academic Optimizer
 Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-exams. Generates a 12-week hybrid study + DSA timeline. Free tier.
 
-<img width="1919" height="968" alt="image" src="https://github.com/user-attachments/assets/bd4aae3c-8bbb-4c57-8a21-17443ceb526f" />
+image.png
 
 
 ---
