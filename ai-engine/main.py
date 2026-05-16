@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 from fastapi import FastAPI, HTTPException, UploadFile, File, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -58,14 +58,14 @@ def _get_demo_response(contents: list) -> str:
 
     INTERVIEW_QS = [
         "Tell me about yourself and your most impactful project.",
-        "Describe the hardest bug you ever debugged â€” what was your process?",
+        "Describe the hardest bug you ever debugged — what was your process?",
         "How do you approach learning a new technology under deadline pressure?",
         "Tell me about a time you conflicted with a teammate and how you resolved it.",
         "Where do you see yourself in 3 years, and why does this role interest you?",
         "What is your greatest technical strength and give me a concrete example?",
     ]
     INTERVIEW_FB = [
-        "Good start â€” try to add specific metrics or outcomes next time.",
+        "Good start — try to add specific metrics or outcomes next time.",
         "Nice structure. Mention what tools or technologies you used.",
         "Good approach. Try to quantify how quickly you ramped up.",
         "Well handled. Always close by stating what you personally learned.",
@@ -84,7 +84,7 @@ def _get_demo_response(contents: list) -> str:
             return "FEEDBACK: Great session overall! You showed good communication skills.\nNEXT: END_INTERVIEW"
         idx = min(q_count, len(INTERVIEW_QS) - 1)
         fb_idx = max(0, idx - 1)
-        fb = INTERVIEW_FB[fb_idx] if last and len(last) > 10 else "Good effort â€” keep going."
+        fb = INTERVIEW_FB[fb_idx] if last and len(last) > 10 else "Good effort — keep going."
         return f"FEEDBACK: {fb}\nNEXT: {INTERVIEW_QS[idx]}"
 
     if "eligible" in last and "actionplan" in last:
@@ -109,7 +109,7 @@ def _get_demo_response(contents: list) -> str:
     if "system design" in last or "scalability" in last or "components" in last:
         return '{"score":7,"strengths":["Good separation of concerns"],"issues":["No data replication"],"suggestions":["Add DB read replicas"],"scalability":"Medium-High","verdict":"Solid architecture for mid-scale."}'
 
-    # Safe default â€” never return raw JSON for unknown context
+    # Safe default — never return raw JSON for unknown context
     return "FEEDBACK: Good effort on that answer.\nNEXT: Can you walk me through your most challenging technical project?"
 
 
@@ -167,7 +167,7 @@ async def chat_with_ai(request: AIRequest):
             
 
             if response.status_code == 429:
-                # Rate limited â€” wait and retry once
+                # Rate limited — wait and retry once
                 await asyncio.sleep(8)
                 response = await client.post(
                     "https://openrouter.ai/api/v1/chat/completions",
