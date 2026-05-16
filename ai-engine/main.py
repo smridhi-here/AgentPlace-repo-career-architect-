@@ -58,7 +58,7 @@ def _get_demo_response(contents: list) -> str:
 
     INTERVIEW_QS = [
         "Tell me about yourself and your most impactful project.",
-        "Describe the hardest bug you ever debugged — what was your process?",
+        "Describe the hardest bug you ever debugged what was your process?",
         "How do you approach learning a new technology under deadline pressure?",
         "Tell me about a time you conflicted with a teammate and how you resolved it.",
         "Where do you see yourself in 3 years, and why does this role interest you?",
@@ -158,7 +158,7 @@ async def chat_with_ai(request: AIRequest):
                     "HTTP-Referer": "https://agentplace.app",
                 },
                 json={
-                    "model": "mistralai/mistral-7b-instruct:free",
+                    "model": "openrouter/auto",
                     "messages": messages_for_api,
                     "max_tokens": request.max_tokens,
                 },
@@ -177,7 +177,7 @@ async def chat_with_ai(request: AIRequest):
                         "HTTP-Referer": "https://agentplace.app",
                     },
                     json={
-                        "model": "mistralai/mistral-7b-instruct:free",
+                        "model": "openrouter/auto",
                         "messages": messages_for_api,
                         "max_tokens": request.max_tokens,
                     },
