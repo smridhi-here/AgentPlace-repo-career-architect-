@@ -4,7 +4,6 @@
 
 **Live Demo:** https://career-architect-zbs9.vercel.app
 
-<img width="1919" height="946" alt="image" src="https://github.com/user-attachments/assets/63c291e2-c29a-491d-955e-0bb1aea95b55" />
 
 image.png
 
