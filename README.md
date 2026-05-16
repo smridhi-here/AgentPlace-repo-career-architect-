@@ -3,10 +3,7 @@
 > Transforms a student profile into a placement-ready portfolio using Generative AI, microservices, and real-time mock interviews.
 
 **Live Demo:** https://career-architect-zbs9.vercel.app
-
-
-image.png
-
+![screenshot](screenshots/Screenshot 2026-05-03 040446.png)
 
 ---
 
@@ -32,23 +29,20 @@ To see Pro features, use UTR code `991920` in the payment flow.
 ### 1. 🏢 Company Blueprint Engine
 Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Google, etc.). Checks CGPA and backlog eligibility against real company cutoffs. Free tier.
 
-<img width="1913" height="943" alt="image" src="https://github.com/user-attachments/assets/0e42a02a-3457-4096-8c2b-2b577f021c81" />
-
 
 ---
 
 ### 2. 🎓 Academic Optimizer
 Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-exams. Generates a 12-week hybrid study + DSA timeline. Free tier.
-
-image.png
+<img width="1919" height="965" alt="Screenshot 2026-05-03 031408" src="https://github.com/user-attachments/assets/aa08995f-1e25-4522-9e9e-219a8be699eb" />
 
 
 ---
 
 ### 3. 📄 ATS Resume & GitHub Analyser
 Reads actual PDF text and live GitHub profile data via the GitHub API. Returns an ATS score, keyword gap analysis, strengths, weaknesses, and 3 AI-generated interview questions based on real projects. Free tier.
+<img width="1919" height="961" alt="Screenshot 2026-05-03 031528" src="https://github.com/user-attachments/assets/f0ea626d-c77f-429f-ab69-0ad8602d3de5" />
 
-<img width="1916" height="936" alt="image" src="https://github.com/user-attachments/assets/28afba16-694c-46c5-a647-fd7e1971e389" />
 
 
 ---
@@ -56,17 +50,17 @@ Reads actual PDF text and live GitHub profile data via the GitHub API. Returns a
 ### 4. ⏱ OA Round Simulator
 Timed coding environment (90-minute countdown) with 8 DSA problems. Supports JavaScript execution, test case running, and AI Big-O complexity analysis. Free tier.
 
-<img width="1919" height="941" alt="image" src="https://github.com/user-attachments/assets/bdb3341a-e2ab-48ae-ae1e-e8bc96daca52" />
-
 
 ---
 
 ### 5. 🧠 Aptitude Training Centre
 50-question bank across Quant, Logic, and Verbal. Timed 30-second per question. Tracks score history in localStorage. Free tier.
 
-<img width="1912" height="947" alt="image" src="https://github.com/user-attachments/assets/7795f69c-495e-43ce-9a77-1ad48fd6186d" />
 
-<img width="1919" height="929" alt="image" src="https://github.com/user-attachments/assets/16f38621-326a-4c4f-b0e9-f3a7d51ec8cb" />
+<img width="1889" height="919" alt="Screenshot 2026-05-03 031649" src="https://github.com/user-attachments/assets/315f5a4e-be89-4221-acc1-727c52bc7620" />
+
+<img width="1893" height="708" alt="Screenshot 2026-05-03 031716" src="https://github.com/user-attachments/assets/0da87a84-31b0-47d9-b0e3-58ac272ad7dd" />
+
 
 
 
@@ -75,9 +69,10 @@ Timed coding environment (90-minute countdown) with 8 DSA problems. Supports Jav
 ### 6. 🎥 Live AI Mock Interview
 Real-time video mock interview with 3 interviewer personas (friendly HR, strict FAANG, behavioural HR). Speech-to-text input, text-to-speech AI responses, 6-question dynamic flow, and a full performance report with scores across communication, technical, and confidence. Pro tier.
 
-<img width="1919" height="959" alt="image" src="https://github.com/user-attachments/assets/39f004e1-1178-49cf-93a8-7ce1971bcffd" />
+<img width="1912" height="949" alt="Screenshot 2026-05-03 031800" src="https://github.com/user-attachments/assets/3d526caf-94d3-479a-b300-c003ebd775f5" />
 
-<img width="1917" height="940" alt="image" src="https://github.com/user-attachments/assets/fbc9df36-ff37-4e4f-bc94-3c1150306e1f" />
+<img width="1907" height="1022" alt="Screenshot 2026-05-03 031907" src="https://github.com/user-attachments/assets/7044344b-da1b-4900-8828-d3192179f20c" />
+
 
 
 
@@ -86,7 +81,10 @@ Real-time video mock interview with 3 interviewer personas (friendly HR, strict 
 ### 7. 🗺 System Design Whiteboard
 Drag-and-drop architecture builder with 10 components (Client, Load Balancer, Cache, Database, etc.). Click two nodes to connect them. Click a connection line to remove it. AI critique gives score, strengths, issues, and suggestions. Pro tier.
 
-<img width="1919" height="947" alt="image" src="https://github.com/user-attachments/assets/8e5d8422-2e76-4d89-a3be-4283c89cc6cd" />
+<img width="1848" height="936" alt="Screenshot 2026-05-03 032042" src="https://github.com/user-attachments/assets/b9111633-c7a6-4d73-83b7-a926e7e24026" />
+
+<img width="1904" height="936" alt="Screenshot 2026-05-03 032100" src="https://github.com/user-attachments/assets/dab122ee-0758-4ffa-8833-105d2bdb5816" />
+
 
 
 ---
@@ -94,7 +92,7 @@ Drag-and-drop architecture builder with 10 components (Client, Load Balancer, Ca
 ### 8. 📋 Practice Sheets
 DSA cheat sheet, interview patterns (STAR, coding flow, system design framework), aptitude formulae, and HR guide. Pro tier.
 
-<img width="1915" height="948" alt="image" src="https://github.com/user-attachments/assets/14bb7b8f-bd70-417e-b3a0-497ce8c81f9f" />
+<img width="1915" height="957" alt="Screenshot 2026-05-03 032158" src="https://github.com/user-attachments/assets/4485eef8-7501-4c66-9d6e-94872b0d3713" />
 
 
 ---
@@ -106,11 +104,15 @@ DSA cheat sheet, interview patterns (STAR, coding flow, system design framework)
 - Access to Blueprint, Academic, Resume, OA, Aptitude tabs
 - Timer stored per account using account creation timestamp
 
-### Pro Tier Upgrade Flow
+### Pro Tier Upgrade Flow!
 
-<img width="1849" height="939" alt="image" src="https://github.com/user-attachments/assets/83432ab9-43df-49dc-acb9-0b836c6f8c00" />
 
-<img width="1919" height="933" alt="image" src="https://github.com/user-attachments/assets/28e5aa2c-3232-49e0-ad72-4872879b24dd" />
+
+
+<img width="1914" height="938" alt="Screenshot 2026-05-03 032240" src="https://github.com/user-attachments/assets/36a32a10-ab8f-414e-822a-692e60f11380" />
+
+
+
 
 
 
