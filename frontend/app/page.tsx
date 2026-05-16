@@ -1696,7 +1696,7 @@ function InterviewTab({ auth }) {
     // Demo mode is only set if callAI itself explicitly returns _demo:true from the backend.
     demoModeRef.current = false;
     // Now proceed with first question...
-    const seed = { role:"user", content:"The interview is starting. Greet me warmly in one sentence then ask me to introduce myself.\nFEEDBACK: [greeting]\nNEXT: Please introduce yourself - tell me your name, background, and what you are currently doing." };
+    const seed = { role:"user", content:"The interview is starting now. Greet the candidate warmly and ask them to introduce themselves. Follow the FEEDBACK/NEXT format strictly." };
     apiRef.current = [seed];
     try {
       const raw = await callAI([seed], getSys(), 500);
