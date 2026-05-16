@@ -1,4 +1,4 @@
-<img width="1916" height="930" alt="Screenshot 2026-05-03 033510" src="https://github.com/user-attachments/assets/35ed6450-3910-49e7-bc27-88570a385c10" /># AgentPlace — AI-Powered Campus Placement Suite 🚀
+# AgentPlace — AI-Powered Campus Placement Suite 🚀
 
 > Transforms a student profile into a placement-ready portfolio using Generative AI, microservices, and real-time mock interviews.
 
@@ -65,9 +65,12 @@ Timed coding environment (90-minute countdown) with 8 DSA problems. Supports Jav
 
 ### 5. 🧠 Aptitude Training Centre
 50-question bank across Quant, Logic, and Verbal. Timed 30-second per question. Tracks score history in localStorage. Free tier.
-<img width="1893" height="708" alt="Screenshot 2026-05-03 031716" src="https://github.com/user-attachments/assets/0da87a84-31b0-47d9-b0e3-58ac272ad7dd" />
+
 
 <img width="1889" height="919" alt="Screenshot 2026-05-03 031649" src="https://github.com/user-attachments/assets/315f5a4e-be89-4221-acc1-727c52bc7620" />
+
+<img width="1893" height="708" alt="Screenshot 2026-05-03 031716" src="https://github.com/user-attachments/assets/0da87a84-31b0-47d9-b0e3-58ac272ad7dd" />
+
 
 
 
@@ -113,7 +116,7 @@ DSA cheat sheet, interview patterns (STAR, coding flow, system design framework)
 
 ### Pro Tier Upgrade Flow!
 
-<img width="1916" height="930" alt="Screenshot 2026-05-03 033510" src="https://github.com/user-attachments/assets/e636e90c-3857-4627-b4c2-7c7173913af1" />
+
 
 
 <img width="1914" height="938" alt="Screenshot 2026-05-03 032240" src="https://github.com/user-attachments/assets/36a32a10-ab8f-414e-822a-692e60f11380" />
