@@ -32,6 +32,7 @@ To see Pro features, use UTR code `991920` in the payment flow.
 
 ### 1. 🏢 Company Blueprint Engine
 Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Google, etc.). Checks CGPA and backlog eligibility against real company cutoffs. Free tier.
+
 ![img](screenshots/s3.png)
 
 
@@ -40,6 +41,7 @@ Generates a personalised 30-day roadmap based on target company (TCS, Amazon, Go
 
 ### 2. 🎓 Academic Optimizer
 Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-exams. Generates a 12-week hybrid study + DSA timeline. Free tier.
+
 ![img](screenshots/s4.png)
 
 
@@ -47,7 +49,10 @@ Tracks CGPA trajectory and backlog status. Identifies blockers like pending re-e
 
 ### 3. 📄 ATS Resume & GitHub Analyser
 Reads actual PDF text and live GitHub profile data via the GitHub API. Returns an ATS score, keyword gap analysis, strengths, weaknesses, and 3 AI-generated interview questions based on real projects. Free tier.
+
 ![img](screenshots/s5.png)
+
+![img](screenshots/s6.png)
 
 
 
@@ -56,7 +61,8 @@ Reads actual PDF text and live GitHub profile data via the GitHub API. Returns a
 
 ### 4. ⏱ OA Round Simulator
 Timed coding environment (90-minute countdown) with 8 DSA problems. Supports JavaScript execution, test case running, and AI Big-O complexity analysis. Free tier.
-![img](screenshots/s6.png)
+
+![img](screenshots/s7.png)
 
 
 
@@ -65,9 +71,9 @@ Timed coding environment (90-minute countdown) with 8 DSA problems. Supports Jav
 ### 5. 🧠 Aptitude Training Centre
 50-question bank across Quant, Logic, and Verbal. Timed 30-second per question. Tracks score history in localStorage. Free tier.
 
-![img](screenshots/s7.png)
-
 ![img](screenshots/s8.png)
+
+![img](screenshots/s9.png)
 
 
 
@@ -76,9 +82,12 @@ Timed coding environment (90-minute countdown) with 8 DSA problems. Supports Jav
 
 ### 6. 🎥 Live AI Mock Interview
 Real-time video mock interview with 3 interviewer personas (friendly HR, strict FAANG, behavioural HR). Speech-to-text input, text-to-speech AI responses, 6-question dynamic flow, and a full performance report with scores across communication, technical, and confidence. Pro tier.
-![img](screenshots/s9.png)
 
 ![img](screenshots/s10.png)
+
+![img](screenshots/s11.png)
+
+![img](screenshots/s16.png)
 
 
 
@@ -86,17 +95,18 @@ Real-time video mock interview with 3 interviewer personas (friendly HR, strict 
 
 ### 7. 🗺 System Design Whiteboard
 Drag-and-drop architecture builder with 10 components (Client, Load Balancer, Cache, Database, etc.). Click two nodes to connect them. Click a connection line to remove it. AI critique gives score, strengths, issues, and suggestions. Pro tier.
-![img](screenshots/s11.png)
 
 ![img](screenshots/s12.png)
+
 
 ---
 
 ### 8. 📋 Practice Sheets
 DSA cheat sheet, interview patterns (STAR, coding flow, system design framework), aptitude formulae, and HR guide. Pro tier.
+
 ![img](screenshots/s13.png)
 
-![img](screenshots/s14.png)
+
 
 ---
 
@@ -109,10 +119,10 @@ DSA cheat sheet, interview patterns (STAR, coding flow, system design framework)
 
 ### Pro Tier Upgrade Flow!
 
+![img](screenshots/s14.png) 
 
+![img](screenshots/s15.png)
 
-
-<img width="1914" height="938" alt="Screenshot 2026-05-03 032240" src="https://github.com/user-attachments/assets/36a32a10-ab8f-414e-822a-692e60f11380" />
 
 
 
